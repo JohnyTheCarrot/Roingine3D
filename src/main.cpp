@@ -12,6 +12,9 @@
 #endif
 #include <GLFW/glfw3native.h>
 
+#include "game.h"
+#include "setup.h"
+
 constexpr int c_Width{640};
 constexpr int c_Height{480};
 
@@ -69,6 +72,8 @@ int main() {
         return 1;
     }
 
+    game::setup();
+
     constexpr bgfx::ViewId clear_view = 0;
     bgfx::setViewClear(clear_view, BGFX_CLEAR_COLOR);
     bgfx::setViewRect(clear_view, 0, 0, bgfx::BackbufferRatio::Equal);
@@ -102,6 +107,15 @@ int main() {
         );
 
         bgfx::setDebug(BGFX_DEBUG_TEXT);
+
+
+        if (engine::Game &game = engine::Game::get_instance();
+            game.has_active_scene()) {
+            auto &scene = game.get_active_scene();
+            scene.update();
+            scene.render();
+        }
+
         bgfx::frame();
     }
 
