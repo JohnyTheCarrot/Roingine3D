@@ -45,9 +45,15 @@ jobs:
             c_compiler: cl
 
     steps:
+      - name: Get dependencies
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libx11-dev libwayland-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev freeglut3-dev libxkbcommon-dev
+
       - uses: actions/checkout@v4
         with:
-          submodules: 'true'
+          submodules: 'recursive'
 
       - name: Set reusable strings
         # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -70,8 +76,8 @@ jobs:
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
 
-          #- name: Test
-          #  working-directory: ${{ steps.strings.outputs.build-output-dir }}
-          # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+        #- name: Test
+        #  working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
     #  run: ctest --build-config ${{ matrix.build_type }}
