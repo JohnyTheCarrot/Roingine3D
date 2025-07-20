@@ -20,24 +20,24 @@ namespace engine {
 
     using Index = uint16_t;
 
-    struct VertexBufferDestroyer final {
-        void operator()(bgfx::VertexBufferHandle const handle) const {
+    struct GenericBgfxDestroyer final {
+        void operator()(auto const handle) const {
             bgfx::destroy(handle);
         }
     };
 
     using VertexBufferUPtr = UniqueHandle<
             bgfx::VertexBufferHandle, BGFX_INVALID_HANDLE,
-            VertexBufferDestroyer>;
-
-    struct IndexBufferDestroyer final {
-        void operator()(bgfx::IndexBufferHandle const handle) const {
-            bgfx::destroy(handle);
-        }
-    };
+            GenericBgfxDestroyer>;
 
     using IndexBufferUPtr = UniqueHandle<
-            bgfx::IndexBufferHandle, BGFX_INVALID_HANDLE, IndexBufferDestroyer>;
+            bgfx::IndexBufferHandle, BGFX_INVALID_HANDLE, GenericBgfxDestroyer>;
+
+    using ShaderUPtr = UniqueHandle<
+            bgfx::ShaderHandle, BGFX_INVALID_HANDLE, GenericBgfxDestroyer>;
+
+    using ProgramUPtr = UniqueHandle<
+            bgfx::ProgramHandle, BGFX_INVALID_HANDLE, GenericBgfxDestroyer>;
 }// namespace engine
 
 #endif//TYPES_H

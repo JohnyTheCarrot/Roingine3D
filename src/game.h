@@ -13,6 +13,8 @@ namespace engine {
     public:
         Scene &set_active_scene(Scene &&scene);
 
+        void clear_active_scene();
+
         [[nodiscard]]
         float get_delta_time() const;
 

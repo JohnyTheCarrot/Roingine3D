@@ -8,6 +8,24 @@ add_subdirectory(external/bgfx)
 add_subdirectory(external/glfw)
 add_subdirectory(external/entt)
 
+set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/install")
+
+bgfx_compile_shaders(
+        TYPE VERTEX
+        SHADERS src/shaders/cube_vert.sc
+        VARYING_DEF ${CMAKE_SOURCE_DIR}/src/shaders/varying.def.sc
+        OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders
+        INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
+)
+
+bgfx_compile_shaders(
+        TYPE FRAGMENT
+        SHADERS src/shaders/cube_frag.sc
+        VARYING_DEF ${CMAKE_SOURCE_DIR}/src/shaders/varying.def.sc
+        OUTPUT_DIR ${CMAKE_BINARY_DIR}//shaders
+        INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
+)
+
 add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/gameobject.cpp
         src/gameobject.h
@@ -25,22 +43,14 @@ add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/misc/unique_handle.h
         src/types.cpp
         src/game.cpp
+        src/shaders/cube_vert.sc
+        src/shaders/cube_frag.sc
+        src/misc/utils.h
+        src/misc/utils.cpp
 )
 
-bgfx_compile_shaders(
-        TYPE VERTEX
-        SHADERS src/shaders/cube.vert.sc
-        VARYING_DEF src/shaders/varying.def.sc
-        OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders
-)
-
-bgfx_compile_shaders(
-        TYPE FRAGMENT
-        SHADERS src/shaders/cube.frag.sc
-        VARYING_DEF src/shaders/varying.def.sc
-        OUTPUT_DIR ${CMAKE_BINARY_DIR}/include/generated/shaders
-)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE bgfx glfw EnTT::EnTT)
+target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx glfw EnTT::EnTT)

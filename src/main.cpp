@@ -1,7 +1,6 @@
 #include <bgfx/bgfx.h>
 #include <GLFW/glfw3.h>
 #include <memory>
-#include <print>
 
 #ifdef __linux__
 #define GLFW_EXPOSE_NATIVE_WAYLAND
@@ -10,10 +9,14 @@
 #elif __APPLE__
 #define GLFW_EXPOSE_NATIVE_COCOA
 #endif
+#include <bx/math.h>
+#include <bx/timer.h>
 #include <GLFW/glfw3native.h>
+#include <iostream>
 
 #include "game.h"
 #include "setup.h"
+#include "types.h"
 
 constexpr int c_Width{640};
 constexpr int c_Height{480};
@@ -45,17 +48,17 @@ void fatal() {
 
 int main() {
     if (!glfwInit()) {
-        std::println("Error: failed initializing glfw");
+        std::cerr << "Error: failed initializing glfw\n";
         fatal();
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    std::unique_ptr<GLFWwindow, GLFWwindowDestroyer> window{glfwCreateWindow(
-            c_Width, c_Height, "Hello, bgfx!", nullptr, nullptr
-    )};
+    std::unique_ptr<GLFWwindow, GLFWwindowDestroyer> window{
+            glfwCreateWindow(c_Width, c_Height, "poggers", nullptr, nullptr)
+    };
 
     if (!window) {
-        std::println("Error: failed creating window");
+        std::cerr << "Error: failed creating window\n";
         fatal();
     }
 
@@ -69,13 +72,15 @@ int main() {
 
     if (!bgfx::init(init)) {
         fatal();
-        return 1;
     }
 
+    engine::Vertex::setup_layout();
     game::setup();
 
     constexpr bgfx::ViewId clear_view = 0;
-    bgfx::setViewClear(clear_view, BGFX_CLEAR_COLOR);
+    bgfx::setViewClear(
+            0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x264B56FF, 1.0f, 0
+    );
     bgfx::setViewRect(clear_view, 0, 0, bgfx::BackbufferRatio::Equal);
 
     while (!glfwWindowShouldClose(window.get())) {
@@ -92,22 +97,53 @@ int main() {
             bgfx::setViewRect(clear_view, 0, 0, bgfx::BackbufferRatio::Equal);
         }
 
+        bx::Vec3        forward = {0.0f, 0.0f, 1.0f};
+        static bx::Vec3 eye     = {0.0f, 0.0f, -15.0f};
+        if (glfwGetKey(window.get(), GLFW_KEY_W) == GLFW_PRESS) {
+            eye.x += forward.x;
+            eye.y += forward.y;
+            eye.z += forward.z;
+        }
+
+        if (glfwGetKey(window.get(), GLFW_KEY_S) == GLFW_PRESS) {
+            eye.x -= forward.x;
+            eye.y -= forward.y;
+            eye.z -= forward.z;
+        }
+
+        if (glfwGetKey(window.get(), GLFW_KEY_A) == GLFW_PRESS) {
+            bx::Vec3 left = {forward.z, 0.0f, -forward.x};
+            eye.x += left.x;
+            eye.y += left.y;
+            eye.z += left.z;
+        }
+
+        if (glfwGetKey(window.get(), GLFW_KEY_D) == GLFW_PRESS) {
+            bx::Vec3 right = {-forward.z, 0.0f, forward.x};
+            eye.x += right.x;
+            eye.y += right.y;
+            eye.z += right.z;
+        }
+
+        float          view[16];
+        bx::Vec3 const at = {0.0f, 0.0f, 0.0f};
+        bx::mtxLookAt(view, eye, at);
+
+        float proj[16];
+        bx::mtxProj(
+                proj, 60.0f,
+                static_cast<float>(width) / static_cast<float>(height), 0.1f,
+                100.0f, bgfx::getCaps()->homogeneousDepth
+        );
+        bgfx::setViewTransform(0, view, proj);
+
         // This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
         bgfx::touch(clear_view);
 
         bgfx::dbgTextClear();
         bgfx::dbgTextPrintf(0, 0, 0x0f, "le pog");
 
-        bgfx::Stats const *stats = bgfx::getStats();
-        bgfx::dbgTextPrintf(
-                0, 2, 0x0f,
-                "Backbuffer %dW x %dH in pixels, debug text %dW x %dH in "
-                "characters.",
-                stats->width, stats->height, stats->textWidth, stats->textHeight
-        );
-
         bgfx::setDebug(BGFX_DEBUG_TEXT);
-
 
         if (engine::Game &game = engine::Game::get_instance();
             game.has_active_scene()) {
@@ -119,6 +155,7 @@ int main() {
         bgfx::frame();
     }
 
+    engine::Game::get_instance().clear_active_scene();
     bgfx::shutdown();
     glfwTerminate();
 

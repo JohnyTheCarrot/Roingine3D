@@ -7,6 +7,10 @@ namespace engine {
         return scene_.value();
     }
 
+    void Game::clear_active_scene() {
+        scene_.reset();
+    }
+
     float Game::get_delta_time() const {
         return 0.0f;// Placeholder for delta time calculation
     }

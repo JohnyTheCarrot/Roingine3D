@@ -1,5 +1,7 @@
 #include "mesh_renderer.h"
 
+#include <bx/math.h>
+
 #include "transform.h"
 
 namespace engine {
@@ -33,5 +35,21 @@ namespace engine {
     }
 
     void MeshRenderer::render() const {
+        if (!bgfx::isValid(vertex_buffer_uptr_.get()) ||
+            !bgfx::isValid(index_buffer_uptr_.get())) {
+            return;
+        }
+
+        constexpr uint64_t state = BGFX_STATE_DEFAULT | BGFX_STATE_PT_TRISTRIP;
+
+        bgfx::setVertexBuffer(0, vertex_buffer_uptr_.get());
+        bgfx::setIndexBuffer(index_buffer_uptr_.get());
+
+        std::array<float, 16> trans_mat{};
+        bx::mtxTranslate(trans_mat.data(), 0, 0, 0);
+
+        bgfx::setTransform(trans_mat.data());
+        bgfx::setState(state);
+        bgfx::submit(0, program_uptr_.get());
     }
 }// namespace engine
