@@ -7,11 +7,26 @@
 #include "gameobject.h"
 
 namespace engine {
+    class Updatable {
+    public:
+        virtual ~Updatable()  = default;
+        virtual void update() = 0;
+    };
+
+    template<class Comp>
+    concept IsUpdatable = std::derived_from<Comp, Updatable>;
+
     class GameObject;
 
     template<class Derived>
     class Component {
         entt::registry *registry_;
+
+    protected:
+        [[nodiscard]]
+        entt::registry const &get_registry() const {
+            return *registry_;
+        }
 
     public:
         explicit Component(entt::registry &registry)
@@ -24,6 +39,14 @@ namespace engine {
                                         registry_->storage<Derived>(),
                                         *static_cast<Derived const *>(this)
                                 )};
+        }
+
+        template<class D = Derived>
+            requires IsUpdatable<D>
+        static void update_of_type(entt::registry &registry) {
+            registry.view<Derived>().each([](Derived &component) {
+                component.update();
+            });
         }
     };
 }// namespace engine

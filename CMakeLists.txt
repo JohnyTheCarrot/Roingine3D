@@ -30,8 +30,6 @@ add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/gameobject.cpp
         src/gameobject.h
         src/components/component.h
-        src/setup.cpp
-        src/setup.h
         src/components/mesh_renderer.h
         src/misc/singleton.h
         src/game.h
@@ -47,6 +45,24 @@ add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/shaders/cube_frag.sc
         src/misc/utils.h
         src/misc/utils.cpp
+        src/components/camera.h
+        src/components/camera.cpp
+        src/commands/command.h
+        src/misc/service_locator.h
+        src/input/keyboard_input.h
+        src/input/keyboard_input.cpp
+        src/input/glfw_input.h
+        src/input/glfw_input.cpp
+
+        src/game/commands/move_command.h
+        src/game/commands/move_command.cpp
+        src/game/components/entity.h
+        src/game/components/entity.cpp
+        src/components/transform.cpp
+        src/game/components/player.h
+        src/game/components/player.cpp
+        src/game/setup.cpp
+        src/game/setup.h
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include)

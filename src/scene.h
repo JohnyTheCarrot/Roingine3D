@@ -7,7 +7,9 @@
 
 namespace engine {
     class Scene final {
-        entt::registry registry_{};
+        std::unique_ptr<entt::registry> registry_{
+                std::make_unique<entt::registry>()
+        };
 
     public:
         Scene();

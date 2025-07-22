@@ -1,6 +1,7 @@
 #include "setup.h"
 
 #include "components/mesh_renderer.h"
+#include "components/player.h"
 #include "game.h"
 #include "scene.h"
 
@@ -19,8 +20,11 @@ static uint16_t const indices[] = {
 void game::setup() {
     engine::Scene scene{};
 
-    auto  game_object   = scene.create_game_object();
-    auto &mesh_renderer = game_object.add_component<engine::MeshRenderer>();
+    auto player = scene.create_game_object();
+    player.add_component<Player>();
+
+    auto  cube          = scene.create_game_object();
+    auto &mesh_renderer = cube.add_component<engine::MeshRenderer>();
     mesh_renderer.add_mesh(verts, indices);
 
     auto &game = engine::Game::get_instance();

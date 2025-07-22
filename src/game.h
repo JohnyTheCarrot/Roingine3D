@@ -9,6 +9,8 @@
 namespace engine {
     class Game final : public Singleton<Game> {
         std::optional<Scene> scene_;
+        int                  width_{};
+        int                  height_{};
 
     public:
         Scene &set_active_scene(Scene &&scene);
@@ -28,6 +30,22 @@ namespace engine {
 
         [[nodiscard]]
         Scene const &get_active_scene() const;
+
+        template<typename F>
+            requires std::invocable<F, int &, int &>
+        void update_size(F &&func) {
+            func(width_, height_);
+        }
+
+        [[nodiscard]]
+        int get_width() const {
+            return width_;
+        }
+
+        [[nodiscard]]
+        int get_height() const {
+            return height_;
+        }
     };
 }// namespace engine
 

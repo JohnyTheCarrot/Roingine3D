@@ -7,6 +7,10 @@
 
 #include "types.h"
 
+namespace bx {
+    struct Vec3;
+}
+
 namespace engine::utils {
     bgfx::Memory const *
     read_file_to_bgfx_memory(std::filesystem::path const &path);

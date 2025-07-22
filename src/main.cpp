@@ -9,13 +9,14 @@
 #elif __APPLE__
 #define GLFW_EXPOSE_NATIVE_COCOA
 #endif
-#include <bx/math.h>
-#include <bx/timer.h>
 #include <GLFW/glfw3native.h>
 #include <iostream>
 
 #include "game.h"
-#include "setup.h"
+#include "game/setup.h"
+#include "input/glfw_input.h"
+#include "input/keyboard_input.h"
+#include "misc/service_locator.h"
 #include "types.h"
 
 constexpr int c_Width{640};
@@ -53,98 +54,69 @@ int main() {
     }
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    std::unique_ptr<GLFWwindow, GLFWwindowDestroyer> window{
+    std::unique_ptr<GLFWwindow, GLFWwindowDestroyer> window_ptr{
             glfwCreateWindow(c_Width, c_Height, "poggers", nullptr, nullptr)
     };
 
-    if (!window) {
+    if (!window_ptr) {
         std::cerr << "Error: failed creating window\n";
         fatal();
     }
 
     bgfx::Init init{};
-    init_platform_data(window.get(), init.platformData);
-    int width{}, height{};
-    glfwGetWindowSize(window.get(), &width, &height);
-    init.resolution.width  = static_cast<uint32_t>(width);
-    init.resolution.height = static_cast<uint32_t>(height);
+    init_platform_data(window_ptr.get(), init.platformData);
+    int window_width{}, window_height{};
+    glfwGetWindowSize(window_ptr.get(), &window_width, &window_height);
+    init.resolution.width  = static_cast<uint32_t>(window_width);
+    init.resolution.height = static_cast<uint32_t>(window_height);
     init.resolution.reset  = BGFX_RESET_VSYNC;
 
     if (!bgfx::init(init)) {
         fatal();
     }
 
+    engine::ServiceLocator<engine::KeyboardInputService>::Provide(
+            std::make_unique<engine::GLFWInputService>(*window_ptr)
+    );
+
     engine::Vertex::setup_layout();
     game::setup();
 
     constexpr bgfx::ViewId clear_view = 0;
+    // auto const clear_color = 0x264B56FF;
+    auto const clear_color = 0x000000FF;// Black
     bgfx::setViewClear(
-            0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x264B56FF, 1.0f, 0
+            0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clear_color, 1.0f, 0
     );
     bgfx::setViewRect(clear_view, 0, 0, bgfx::BackbufferRatio::Equal);
 
-    while (!glfwWindowShouldClose(window.get())) {
+    while (!glfwWindowShouldClose(window_ptr.get())) {
         glfwPollEvents();
 
-        int old_width{width}, old_height{height};
-        glfwGetWindowSize(window.get(), &width, &height);
+        int old_width{window_width}, old_height{window_height};
+        engine::Game::get_instance().update_size([&](int &width, int &height) {
+            glfwGetWindowSize(window_ptr.get(), &width, &height);
+            window_width  = width;
+            window_height = height;
+        });
 
-        if (width != old_width || height != old_height) {
+        if (window_width != old_width || window_height != old_height) {
             bgfx::reset(
-                    static_cast<uint32_t>(width), static_cast<uint32_t>(height),
-                    BGFX_RESET_VSYNC
+                    static_cast<uint32_t>(window_width),
+                    static_cast<uint32_t>(window_height), BGFX_RESET_VSYNC
             );
             bgfx::setViewRect(clear_view, 0, 0, bgfx::BackbufferRatio::Equal);
         }
-
-        bx::Vec3        forward = {0.0f, 0.0f, 1.0f};
-        static bx::Vec3 eye     = {0.0f, 0.0f, -15.0f};
-        if (glfwGetKey(window.get(), GLFW_KEY_W) == GLFW_PRESS) {
-            eye.x += forward.x;
-            eye.y += forward.y;
-            eye.z += forward.z;
-        }
-
-        if (glfwGetKey(window.get(), GLFW_KEY_S) == GLFW_PRESS) {
-            eye.x -= forward.x;
-            eye.y -= forward.y;
-            eye.z -= forward.z;
-        }
-
-        if (glfwGetKey(window.get(), GLFW_KEY_A) == GLFW_PRESS) {
-            bx::Vec3 left = {forward.z, 0.0f, -forward.x};
-            eye.x += left.x;
-            eye.y += left.y;
-            eye.z += left.z;
-        }
-
-        if (glfwGetKey(window.get(), GLFW_KEY_D) == GLFW_PRESS) {
-            bx::Vec3 right = {-forward.z, 0.0f, forward.x};
-            eye.x += right.x;
-            eye.y += right.y;
-            eye.z += right.z;
-        }
-
-        float          view[16];
-        bx::Vec3 const at = {0.0f, 0.0f, 0.0f};
-        bx::mtxLookAt(view, eye, at);
-
-        float proj[16];
-        bx::mtxProj(
-                proj, 60.0f,
-                static_cast<float>(width) / static_cast<float>(height), 0.1f,
-                100.0f, bgfx::getCaps()->homogeneousDepth
-        );
-        bgfx::setViewTransform(0, view, proj);
 
         // This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0.
         bgfx::touch(clear_view);
 
         bgfx::dbgTextClear();
-        bgfx::dbgTextPrintf(0, 0, 0x0f, "le pog");
 
         bgfx::setDebug(BGFX_DEBUG_TEXT);
 
+        engine::ServiceLocator<engine::KeyboardInputService>::Get()
+                .process_input();
         if (engine::Game &game = engine::Game::get_instance();
             game.has_active_scene()) {
             auto &scene = game.get_active_scene();

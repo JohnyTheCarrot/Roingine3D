@@ -11,7 +11,7 @@ namespace engine {
     class Transform;
 
     class MeshRenderer : public Component<MeshRenderer> {
-        Transform       *transform_ptr_{};
+        Transform const *transform_ptr_{};
         VertexBufferUPtr vertex_buffer_uptr_{};
         IndexBufferUPtr  index_buffer_uptr_{};
         ShaderUPtr       vert_shader_uptr_{utils::load_shader("cube_vert")};
@@ -19,9 +19,6 @@ namespace engine {
         ProgramUPtr      program_uptr_{bgfx::createProgram(
                 vert_shader_uptr_.get(), frag_shader_uptr_.get(), true
         )};
-
-        [[nodiscard]]
-        bool is_frustum();
 
     public:
         explicit MeshRenderer(entt::registry &registry);

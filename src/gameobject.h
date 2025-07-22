@@ -4,9 +4,14 @@
 #include <entt/entity/registry.hpp>
 
 namespace engine {
+    class Camera;
+
     class GameObject final {
         entt::registry *registry_;
         entt::entity    entity_;
+
+        [[nodiscard]]
+        bool has_camera() const;
 
     public:
         explicit GameObject(entt::registry &registry);
@@ -21,6 +26,14 @@ namespace engine {
                         "GameObject already has component of type " +
                         std::string{typeid(T).name()}
                 );
+
+            if constexpr (std::is_same_v<T, Camera>) {
+                if (has_camera()) {
+                    throw std::runtime_error(
+                            "The engine only supports one camera at the moment."
+                    );
+                }
+            }
 
             return registry_->emplace<T>(
                     entity_, *registry_, std::forward<Args>(args)...
