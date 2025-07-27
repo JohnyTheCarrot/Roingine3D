@@ -12,13 +12,12 @@ namespace engine {
     }
 
     void Scene::update() const {
-        Camera::update_of_type(*registry_);
-        game::Player::update_of_type(*registry_);
+        Camera::update_of_type();
     }
 
-    void Scene::render() const {
-        registry_->view<Camera>().each([](auto const &camera) {
-            camera.render();
+    void Scene::render(Game const &game) const {
+        registry_->view<Camera>().each([&](auto const &camera) {
+            camera.render(game);
         });
     }
 }// namespace engine

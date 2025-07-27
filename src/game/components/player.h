@@ -20,6 +20,8 @@ namespace game {
         std::vector<engine::UniqueMouseCommandHandle>    mouse_commands_{};
         float cam_pitch_{}, cam_yaw_{-90.f};
 
+        void orient();
+
     public:
         explicit Player(entt::registry &registry);
 

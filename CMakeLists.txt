@@ -26,13 +26,13 @@ bgfx_compile_shaders(
         INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
 )
 
-add_executable(CPP_Engine src/main.cpp external/backward.cpp
+add_executable(CPP_Engine external/backward.cpp
         src/gameobject.cpp
         src/gameobject.h
         src/components/component.h
         src/components/mesh_renderer.h
         src/misc/singleton.h
-        src/game.h
+        src/application.h
         src/scene.h
         src/scene.cpp
         src/components/mesh_renderer.cpp
@@ -40,7 +40,7 @@ add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/types.h
         src/misc/unique_handle.h
         src/types.cpp
-        src/game.cpp
+        src/application.cpp
         src/shaders/cube_vert.sc
         src/shaders/cube_frag.sc
         src/misc/utils.h
@@ -60,8 +60,6 @@ add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/components/transform.cpp
         src/game/components/player.h
         src/game/components/player.cpp
-        src/game/setup.cpp
-        src/game/setup.h
         src/game/commands/cam_adjust_command.h
         src/game/commands/cam_adjust_command.cpp
         src/include/math/vec.h
@@ -71,6 +69,12 @@ add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/include/math/quaternion.h
         src/api_internal/math/quaternion.cpp
         src/api_internal/math/quaternion_utils.h
+        src/game.h
+        src/engine.h
+        src/engine.cpp
+        src/game/game_main.cpp
+        src/game/audio_rt_game.h
+        src/game/audio_rt_game.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include)

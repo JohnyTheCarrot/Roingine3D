@@ -6,10 +6,18 @@
 #include "gameobject.h"
 
 namespace engine {
+    class Game;
+
     class Scene final {
         std::unique_ptr<entt::registry> registry_{
                 std::make_unique<entt::registry>()
         };
+
+        friend class Engine;
+
+        void update() const;
+
+        void render(Game const &game) const;
 
     public:
         Scene();
@@ -17,9 +25,11 @@ namespace engine {
         [[nodiscard]]
         GameObject create_game_object();
 
-        void update() const;
-
-        void render() const;
+        // TODO: figure out how to hide this from the public API
+        [[nodiscard]]
+        entt::registry &get_registry() {
+            return *registry_;
+        }
     };
 }// namespace engine
 

@@ -1,7 +1,7 @@
 #include "gameobject.h"
 
+#include "application.h"
 #include "components/camera.h"
-#include "game.h"
 
 namespace engine {
     bool GameObject::has_camera() const {
@@ -43,6 +43,9 @@ namespace engine {
     }
 
     GameObject *GameObject::get_parent() const {
+        if (!registry_->storage<Relationship>().contains(entity_))
+            return nullptr;
+
         auto const &relationship = registry_->get<Relationship>(entity_);
         if (relationship.parent == entt::null) {
             return nullptr;

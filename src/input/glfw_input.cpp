@@ -1,9 +1,8 @@
 #include "glfw_input.h"
 
 #include <algorithm>
-#include <iostream>
 
-#include "game.h"
+#include "application.h"
 #include "misc/service_locator.h"
 
 namespace engine {
@@ -81,9 +80,8 @@ namespace engine {
         current_key_state  = action == GLFW_PRESS || action == GLFW_REPEAT;
     }
 
-    void GLFWInputService::mouse_callback(
-            GLFWwindow *, double xpos, double ypos
-    ) {
+    void
+    GLFWInputService::mouse_callback(GLFWwindow *, double xpos, double ypos) {
         auto &service = ServiceLocator<KeyboardMouseInputService>::GetSpecific<
                 GLFWInputService>();
 
@@ -91,9 +89,6 @@ namespace engine {
         auto const delta_y         = ypos - service.last_cursor_pos_y_;
         service.last_cursor_pos_x_ = xpos;
         service.last_cursor_pos_y_ = ypos;
-        std::cout << "Mouse moved: "
-                  << "Delta X: " << delta_x << ", Delta Y: " << delta_y
-                  << std::endl;
 
         if (delta_x != 0 || delta_y != 0) {
             auto const delta_x_int = static_cast<int>(delta_x);

@@ -5,6 +5,8 @@
 #include "transform.h"
 
 namespace engine {
+    class Game;
+
     class Camera final
         : public Component<Camera>
         , public Updatable {
@@ -15,7 +17,7 @@ namespace engine {
     public:
         explicit Camera(entt::registry &registry);
 
-        void render() const;
+        void render(Game const &game) const;
 
         void update() override;
     };

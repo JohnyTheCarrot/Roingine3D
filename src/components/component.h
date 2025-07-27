@@ -4,6 +4,7 @@
 #include <entt/entity/helper.hpp>
 #include <entt/entity/registry.hpp>
 
+#include "application.h"
 #include "gameobject.h"
 
 namespace engine {
@@ -11,6 +12,12 @@ namespace engine {
     public:
         virtual ~Updatable()  = default;
         virtual void update() = 0;
+    };
+
+    class Renderable {
+    public:
+        virtual ~Renderable()       = default;
+        virtual void render() const = 0;
     };
 
     template<class Comp>
@@ -43,8 +50,10 @@ namespace engine {
 
         template<class D = Derived>
             requires IsUpdatable<D>
-        static void update_of_type(entt::registry &registry) {
-            registry.view<Derived>().each([](Derived &component) {
+        static void update_of_type() {
+            auto &scene = Application::get_instance().get_active_scene();
+
+            scene.get_registry().view<Derived>().each([](Derived &component) {
                 component.update();
             });
         }

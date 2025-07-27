@@ -45,8 +45,7 @@ namespace engine {
         bgfx::setVertexBuffer(0, vertex_buffer_uptr_.get());
         bgfx::setIndexBuffer(index_buffer_uptr_.get());
 
-        std::array<float, 16> trans_mat{};
-        bx::mtxTranslate(trans_mat.data(), 0, 0, 0);
+        auto const trans_mat = transform_ptr_->get_transform_matrix();
 
         bgfx::setTransform(trans_mat.data());
         bgfx::setState(state);

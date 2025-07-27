@@ -1,51 +1,15 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <optional>
-
-#include "misc/singleton.h"
-#include "scene.h"
-
 namespace engine {
-    class Game final : public Singleton<Game> {
-        std::optional<Scene> scene_;
-        int                  width_{};
-        int                  height_{};
-
+    class Game {
     public:
-        Scene &set_active_scene(Scene &&scene);
+        virtual ~Game() = default;
 
-        void clear_active_scene();
-
-        [[nodiscard]]
-        float get_delta_time() const;
-
-        [[nodiscard]]
-        bool has_active_scene() const {
-            return scene_.has_value();
-        }
-
-        [[nodiscard]]
-        Scene &get_active_scene();
-
-        [[nodiscard]]
-        Scene const &get_active_scene() const;
-
-        template<typename F>
-            requires std::invocable<F, int &, int &>
-        void update_size(F &&func) {
-            func(width_, height_);
-        }
-
-        [[nodiscard]]
-        int get_width() const {
-            return width_;
-        }
-
-        [[nodiscard]]
-        int get_height() const {
-            return height_;
-        }
+        virtual void setup()              = 0;
+        virtual void update()             = 0;
+        virtual void render() const       = 0;
+        virtual void debug_render() const = 0;
     };
 }// namespace engine
 

@@ -10,6 +10,37 @@
 #include "misc/utils.h"
 
 namespace game {
+    void Player::orient() {
+        {
+            auto const         pitch_adjusted = cam_pitch_ - 90.f;
+            engine::math::Vec3 look_direction{};
+            look_direction.set_y(sin(engine::utils::deg_to_rad(pitch_adjusted))
+            );
+            look_direction.set_z(cos(engine::utils::deg_to_rad(pitch_adjusted))
+            );
+            look_direction.normalize();
+
+            engine::math::Quaternion rotation{
+                    look_direction.get_x(), look_direction.get_y(),
+                    look_direction.get_z(), 0.f
+            };
+
+            auto &cam_transform =
+                    camera_gameobject_.get_component<engine::Transform>();
+
+            cam_transform.set_rotation(rotation);
+        }
+
+        {
+            engine::math::Vec3 forward_vec{};
+            forward_vec.set_x(cos(engine::utils::deg_to_rad(cam_yaw_)));
+            forward_vec.set_z(sin(engine::utils::deg_to_rad(cam_yaw_)));
+            auto &transform =
+                    get_gameobject().get_component<engine::Transform>();
+            transform.set_rotation(forward_vec);
+        }
+    }
+
     Player::Player(entt::registry &registry)
         : Component{registry}
         , entity_ptr_{&get_gameobject().get_or_add_component<Entity>()}
@@ -60,6 +91,7 @@ namespace game {
         mouse_commands_.emplace_back(input_service.add_command(
                 std::make_unique<CameraAdjustCommand>(*this)
         ));
+        orient();
     }
 
     void Player::update() {
@@ -70,41 +102,30 @@ namespace game {
                 0, 0, 0x0f, "{%f, %f, %f}", pos.get_x(), pos.get_y(),
                 pos.get_z()
         );
+        bgfx::dbgTextPrintf(
+                0, 1, 0x0f, "Cam pitch: %f, yaw: %f", cam_pitch_, cam_yaw_
+        );
+        bgfx::dbgTextPrintf(
+                0, 2, 0x0f, "rotQ: %f + %fi + %fj + %fk",
+                transform_ptr->get_rotation().x_,
+                transform_ptr->get_rotation().y_,
+                transform_ptr->get_rotation().z_,
+                transform_ptr->get_rotation().w_
+        );
+        bgfx::dbgTextPrintf(
+                0, 3, 0x0f, "fwd: {%f, %f, %f}",
+                transform_ptr->get_forward().get_x(),
+                transform_ptr->get_forward().get_y(),
+                transform_ptr->get_forward().get_z()
+        );
     }
 
     void Player::rotate(float delta_x, float delta_y) {
-        auto &cam_transform =
-                camera_gameobject_.get_component<engine::Transform>();
-
         cam_pitch_ += delta_y;
         cam_yaw_ += delta_x;
         cam_pitch_ = std::clamp(cam_pitch_, -89.0f, 89.0f);
         cam_yaw_   = std::fmod(cam_yaw_, 360.0f);
 
-        {
-            auto const         pitch_adjusted = cam_pitch_ - 90.f;
-            engine::math::Vec3 look_direction{};
-            look_direction.set_y(sin(engine::utils::deg_to_rad(pitch_adjusted))
-            );
-            look_direction.set_z(cos(engine::utils::deg_to_rad(pitch_adjusted))
-            );
-            look_direction.normalize();
-
-            engine::math::Quaternion rotation{
-                    look_direction.get_x(), look_direction.get_y(),
-                    look_direction.get_z(), 0.f
-            };
-
-            cam_transform.set_rotation(rotation);
-        }
-
-        {
-            engine::math::Vec3 forward_vec{};
-            forward_vec.set_x(cos(engine::utils::deg_to_rad(cam_yaw_)));
-            forward_vec.set_z(sin(engine::utils::deg_to_rad(cam_yaw_)));
-            auto &transform =
-                    get_gameobject().get_component<engine::Transform>();
-            transform.set_rotation(forward_vec);
-        }
+        orient();
     }
 }// namespace game

@@ -123,7 +123,7 @@ namespace engine {
         auto const               bx_vec = api_internals::to_bx_vec3(vec);
         std::array<float, 4 * 4> mat{};
         bx::mtxFromQuaternion(
-                mat.data(), ::api_internals::to_bx_quaternion(world_rotation)
+                mat.data(), api_internals::to_bx_quaternion(world_rotation)
         );
 
         math::Vec3 result{};

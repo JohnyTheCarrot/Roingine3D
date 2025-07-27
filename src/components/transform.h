@@ -12,7 +12,7 @@ namespace engine {
     class Transform final : public Component<Transform> {
         Dirty<math::Vec3>                position_{0.0f, 0.0f, 0.0f};
         Dirty<math::Vec3>                scale_{1.0f, 1.0f, 1.0f};
-        Dirty<math::Quaternion>          rotation_{0.0f, 0.0f, 0.0f, 1.0f};
+        Dirty<math::Quaternion>          rotation_{0.0f, 0.0f, -1.0f, 0.0f};
         mutable std::array<float, 4 * 4> trans_mat_{};
 
         friend class Camera;
