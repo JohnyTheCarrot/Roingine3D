@@ -1,9 +1,6 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <bx/math.h>
-#include <optional>
-
 #include "component.h"
 #include "transform.h"
 
@@ -11,9 +8,9 @@ namespace engine {
     class Camera final
         : public Component<Camera>
         , public Updatable {
-        Transform const        *transform_ptr_;
-        bx::Vec3                look_direction_{0.0f, 0.0f, -1.0f};
-        std::optional<bx::Vec3> look_at_vec_override_{};
+        Transform const                 *transform_ptr_;
+        mutable std::array<float, 4 * 4> view_mat_{};
+        float                            pitch_{}, yaw_{-90.f};
 
     public:
         explicit Camera(entt::registry &registry);
@@ -21,9 +18,6 @@ namespace engine {
         void render() const;
 
         void update() override;
-
-        [[nodiscard]]
-        bx::Vec3 get_look_at() const;
     };
 }// namespace engine
 

@@ -7,7 +7,7 @@
 namespace game {
     class Entity;
 
-    class MoveEntityCommand final : public engine::Command {
+    class MoveEntityCommand final : public engine::Command<> {
         MovementDirection direction_;
         Entity           *entity_ptr_;
 

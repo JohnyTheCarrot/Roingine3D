@@ -15,12 +15,12 @@
 #include "game.h"
 #include "game/setup.h"
 #include "input/glfw_input.h"
-#include "input/keyboard_input.h"
+#include "input/mouse_keyboard_input.h"
 #include "misc/service_locator.h"
 #include "types.h"
 
-constexpr int c_Width{640};
-constexpr int c_Height{480};
+constexpr int c_Width{800};
+constexpr int c_Height{600};
 
 void init_platform_data(
         GLFWwindow *window_ptr, bgfx::PlatformData &platform_data
@@ -55,7 +55,7 @@ int main() {
 
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     std::unique_ptr<GLFWwindow, GLFWwindowDestroyer> window_ptr{
-            glfwCreateWindow(c_Width, c_Height, "poggers", nullptr, nullptr)
+            glfwCreateWindow(c_Width, c_Height, "eh bobba e", nullptr, nullptr)
     };
 
     if (!window_ptr) {
@@ -75,7 +75,7 @@ int main() {
         fatal();
     }
 
-    engine::ServiceLocator<engine::KeyboardInputService>::Provide(
+    engine::ServiceLocator<engine::KeyboardMouseInputService>::Provide(
             std::make_unique<engine::GLFWInputService>(*window_ptr)
     );
 
@@ -89,6 +89,7 @@ int main() {
             0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clear_color, 1.0f, 0
     );
     bgfx::setViewRect(clear_view, 0, 0, bgfx::BackbufferRatio::Equal);
+    glfwSetInputMode(window_ptr.get(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     while (!glfwWindowShouldClose(window_ptr.get())) {
         glfwPollEvents();
@@ -115,7 +116,7 @@ int main() {
 
         bgfx::setDebug(BGFX_DEBUG_TEXT);
 
-        engine::ServiceLocator<engine::KeyboardInputService>::Get()
+        engine::ServiceLocator<engine::KeyboardMouseInputService>::Get()
                 .process_input();
         if (engine::Game &game = engine::Game::get_instance();
             game.has_active_scene()) {

@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <cmath>
 #include <fstream>
 #include <vector>
 
@@ -54,5 +55,9 @@ namespace engine::utils {
         }
 
         return ShaderUPtr{bgfx::createShader(mem)};
+    }
+
+    float deg_to_rad(float degrees) {
+        return degrees * (M_PIf / 180.0f);
     }
 }// namespace engine::utils

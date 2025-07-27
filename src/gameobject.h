@@ -2,9 +2,17 @@
 #define GAMEOBJECT_H
 
 #include <entt/entity/registry.hpp>
+#include <unordered_set>
 
 namespace engine {
     class Camera;
+
+    namespace {
+        struct Relationship final {
+            entt::entity                     parent{entt::null};
+            std::unordered_set<entt::entity> children{};
+        };
+    }// namespace
 
     class GameObject final {
         entt::registry *registry_;
@@ -40,9 +48,14 @@ namespace engine {
             );
         }
 
+        void set_parent(GameObject const &new_parent) const;
+
+        [[nodiscard]]
+        GameObject *get_parent() const;
+
         template<class T>
         [[nodiscard]]
-        T *get_component() {
+        T *get_optional_component() const {
             if (!has_component<T>())
                 return nullptr;
 
@@ -52,7 +65,7 @@ namespace engine {
         template<class T, class... Args>
             requires std::constructible_from<T, entt::registry &, Args...>
         T &get_or_add_component(Args &&...args) {
-            if (auto *comp_ptr = get_component<T>())
+            if (auto *comp_ptr = get_optional_component<T>())
                 return *comp_ptr;
 
             return add_component<T>(std::forward<Args>(args)...);
@@ -72,9 +85,18 @@ namespace engine {
 
         template<class T>
         [[nodiscard]]
+        T &get_component() {
+            return registry_->get<T>(entity_);
+        }
+
+        template<class T>
+        [[nodiscard]]
         T const &get_component() const {
             return registry_->get<T>(entity_);
         }
+
+        [[nodiscard]]
+        GameObject add_child() const;
     };
 }// namespace engine
 

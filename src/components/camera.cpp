@@ -1,5 +1,6 @@
 #include "camera.h"
 
+#include "api_internal/math/vec_utils.h"
 #include "game.h"
 #include "mesh_renderer.h"
 
@@ -10,10 +11,7 @@ namespace engine {
     }
 
     void Camera::render() const {
-        auto const location = transform_ptr_->get_position();
-
-        float view[16];
-        bx::mtxLookAt(view, location, get_look_at());
+        std::array view_mat = transform_ptr_->get_view_matrix();
 
         auto const &game = Game::get_instance();
         float       proj[16];
@@ -21,9 +19,9 @@ namespace engine {
                 proj, 60.0f,
                 static_cast<float>(game.get_width()) /
                         static_cast<float>(game.get_height()),
-                0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth
+                0.1f, 1000.0f, bgfx::getCaps()->homogeneousDepth
         );
-        bgfx::setViewTransform(0, view, proj);
+        bgfx::setViewTransform(0, view_mat.data(), proj);
 
         {
             auto const mesh_renderers = get_registry().view<MeshRenderer>();
@@ -35,13 +33,5 @@ namespace engine {
     }
 
     void Camera::update() {
-    }
-
-    bx::Vec3 Camera::get_look_at() const {
-        if (look_at_vec_override_.has_value()) {
-            return look_at_vec_override_.value();
-        }
-
-        return bx::add(transform_ptr_->get_position(), look_direction_);
     }
 }// namespace engine

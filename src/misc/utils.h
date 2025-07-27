@@ -16,6 +16,9 @@ namespace engine::utils {
     read_file_to_bgfx_memory(std::filesystem::path const &path);
 
     ShaderUPtr load_shader(std::string_view path);
+
+    [[nodiscard]]
+    float deg_to_rad(float degrees);
 }// namespace engine::utils
 
 #endif//UTILS_H

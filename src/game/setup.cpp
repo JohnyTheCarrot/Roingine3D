@@ -22,6 +22,9 @@ void game::setup() {
 
     auto player = scene.create_game_object();
     player.add_component<Player>();
+    player.get_optional_component<engine::Transform>()->set_position(
+            0.f, 0.f, 20.f
+    );
 
     auto  cube          = scene.create_game_object();
     auto &mesh_renderer = cube.add_component<engine::MeshRenderer>();

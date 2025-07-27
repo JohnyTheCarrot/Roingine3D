@@ -47,10 +47,9 @@ add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/misc/utils.cpp
         src/components/camera.h
         src/components/camera.cpp
-        src/commands/command.h
         src/misc/service_locator.h
-        src/input/keyboard_input.h
-        src/input/keyboard_input.cpp
+        src/input/mouse_keyboard_input.h
+        src/input/mouse_keyboard_input.cpp
         src/input/glfw_input.h
         src/input/glfw_input.cpp
 
@@ -63,10 +62,19 @@ add_executable(CPP_Engine src/main.cpp external/backward.cpp
         src/game/components/player.cpp
         src/game/setup.cpp
         src/game/setup.h
+        src/game/commands/cam_adjust_command.h
+        src/game/commands/cam_adjust_command.cpp
+        src/include/math/vec.h
+        src/api_internal/math/vec_utils.h
+        src/api_internal/math/vec_utils.cpp
+        src/misc/dirty.h
+        src/include/math/quaternion.h
+        src/api_internal/math/quaternion.cpp
+        src/api_internal/math/quaternion_utils.h
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include)
 
-target_include_directories(${PROJECT_NAME} PRIVATE src)
+target_include_directories(${PROJECT_NAME} PRIVATE src src/include)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx glfw EnTT::EnTT)

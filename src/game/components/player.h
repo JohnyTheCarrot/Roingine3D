@@ -5,7 +5,7 @@
 
 #include "components/component.h"
 #include "game/commands/move_command.h"
-#include "input/keyboard_input.h"
+#include "input/mouse_keyboard_input.h"
 
 namespace game {
     class Entity;
@@ -14,7 +14,11 @@ namespace game {
         : public engine::Component<Player>
         , public engine::Updatable {
         Entity                                          *entity_ptr_;
-        std::vector<engine::UniqueKeyboardCommandHandle> commands_{};
+        engine::Camera                                  *camera_ptr_;
+        engine::GameObject                               camera_gameobject_;
+        std::vector<engine::UniqueKeyboardCommandHandle> keyboard_commands_{};
+        std::vector<engine::UniqueMouseCommandHandle>    mouse_commands_{};
+        float cam_pitch_{}, cam_yaw_{-90.f};
 
     public:
         explicit Player(entt::registry &registry);
@@ -24,6 +28,8 @@ namespace game {
         Player &operator=(Player &&) = default;
 
         void update() override;
+
+        void rotate(float delta_x, float delta_y);
     };
 }// namespace game
 
