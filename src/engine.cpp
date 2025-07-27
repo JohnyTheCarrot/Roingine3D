@@ -8,11 +8,13 @@
 #define GLFW_EXPOSE_NATIVE_COCOA
 #endif
 #include <bgfx/bgfx.h>
+#include <chrono>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #include <iostream>
 
 #include "application.h"
+#include "bx/timer.h"
 #include "input/glfw_input.h"
 #include "input/mouse_keyboard_input.h"
 #include "misc/service_locator.h"
@@ -109,7 +111,18 @@ namespace engine {
         void main_loop() {
             auto &app = Application::get_instance();
 
+            using Clock = std::chrono::high_resolution_clock;
+
+            auto last_time = Clock::now();
+
             while (running_) {
+                auto current_time = Clock::now();
+                auto delta_time =
+                        std::chrono::duration<float>(current_time - last_time)
+                                .count();
+                app.delta_time_ = delta_time;
+                last_time       = current_time;
+
                 glfwPollEvents();
                 if (glfwWindowShouldClose(window_ptr_.get())) {
                     running_ = false;

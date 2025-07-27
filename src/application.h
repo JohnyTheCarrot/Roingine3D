@@ -3,6 +3,7 @@
 
 #include <optional>
 
+#include "engine.h"
 #include "misc/singleton.h"
 #include "scene.h"
 
@@ -11,7 +12,10 @@ namespace engine {
         std::optional<Scene> scene_;
         int                  width_{};
         int                  height_{};
+        float                delta_time_{0.0f};
         bool                 running_{false};
+
+        friend class Engine::Impl;
 
     public:
         Scene &set_active_scene(Scene &&scene);

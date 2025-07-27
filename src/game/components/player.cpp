@@ -121,8 +121,12 @@ namespace game {
     }
 
     void Player::rotate(float delta_x, float delta_y) {
-        cam_pitch_ += delta_y;
-        cam_yaw_ += delta_x;
+        auto const factor =
+                engine::Application::get_instance().get_delta_time() *
+                rot_speed_;
+
+        cam_pitch_ += delta_y * factor;
+        cam_yaw_ += delta_x * factor;
         cam_pitch_ = std::clamp(cam_pitch_, -89.0f, 89.0f);
         cam_yaw_   = std::fmod(cam_yaw_, 360.0f);
 

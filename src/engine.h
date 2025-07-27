@@ -12,6 +12,7 @@ namespace engine {
 
         std::unique_ptr<Impl> impl_ptr_;
         bool                  running_{false};
+        friend class Application;
 
     public:
         Engine(std::unique_ptr<Game> game, std::string title, int width,

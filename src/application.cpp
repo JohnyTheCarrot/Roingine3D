@@ -18,7 +18,7 @@ namespace engine {
     }
 
     float Application::get_delta_time() const {
-        return 0.0f;// Placeholder for delta time calculation
+        return delta_time_;
     }
 
     Scene &Application::get_active_scene() {

@@ -14,11 +14,11 @@ namespace game {
         : public engine::Component<Player>
         , public engine::Updatable {
         Entity                                          *entity_ptr_;
-        engine::Camera                                  *camera_ptr_;
         engine::GameObject                               camera_gameobject_;
         std::vector<engine::UniqueKeyboardCommandHandle> keyboard_commands_{};
         std::vector<engine::UniqueMouseCommandHandle>    mouse_commands_{};
         float cam_pitch_{}, cam_yaw_{-90.f};
+        float rot_speed_{9.f};
 
         void orient();
 
