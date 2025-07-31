@@ -75,9 +75,18 @@ add_executable(CPP_Engine external/backward.cpp
         src/game/game_main.cpp
         src/game/audio_rt_game.h
         src/game/audio_rt_game.cpp
+        src/graphics/texture.h
+        src/graphics/texture.cpp
+        external/stb_image/std_image.cpp
+        src/graphics/mesh.h
+        src/graphics/mesh.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include external/stb_image)
+
+add_custom_target(assets ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets
+        COMMENT "Copying assets to build directory")
+add_dependencies(${PROJECT_NAME} assets)
 
 target_include_directories(${PROJECT_NAME} PRIVATE src src/include)
 

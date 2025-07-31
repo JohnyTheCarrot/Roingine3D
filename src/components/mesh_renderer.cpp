@@ -5,45 +5,29 @@
 #include "transform.h"
 
 namespace engine {
-    MeshRenderer::MeshRenderer(entt::registry &registry)
+    MeshRenderer::MeshRenderer(
+            entt::registry &registry, std::unique_ptr<Mesh> mesh_uptr
+    )
         : Component{registry}
-        , transform_ptr_{&get_gameobject().get_or_add_component<Transform>()} {
-    }
-
-    void MeshRenderer::add_mesh(
-            std::span<Vertex const> const vertices,
-            std::span<Index const> const  indices
-    ) {
-        if (auto vertex_buffer_handle_raw = bgfx::createVertexBuffer(
-                    bgfx::makeRef(vertices.data(), vertices.size_bytes()),
-                    Vertex::layout
-            );
-            bgfx::isValid(vertex_buffer_handle_raw)) {
-            vertex_buffer_uptr_.reset(vertex_buffer_handle_raw);
-        } else {
-            throw std::runtime_error("Failed to create vertex buffer");
-        }
-
-        if (auto const index_buffer_handle_raw = bgfx::createIndexBuffer(
-                    bgfx::makeRef(indices.data(), indices.size_bytes())
-            );
-            bgfx::isValid(index_buffer_handle_raw)) {
-            index_buffer_uptr_.reset(index_buffer_handle_raw);
-        } else {
-            throw std::runtime_error("Failed to create index buffer");
-        }
+        , transform_ptr_{&get_gameobject().get_or_add_component<Transform>()}
+        , mesh_uptr_{std::move(mesh_uptr)} {
     }
 
     void MeshRenderer::render() const {
-        if (!bgfx::isValid(vertex_buffer_uptr_.get()) ||
-            !bgfx::isValid(index_buffer_uptr_.get())) {
-            return;
+        uint64_t state = BGFX_STATE_DEFAULT | BGFX_STATE_WRITE_RGB |
+                         BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z |
+                         BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_MSAA;
+        state |= mesh_uptr_->get_format() == Mesh::IndexFormat::TriangleStrip
+                       ? BGFX_STATE_PT_TRISTRIP
+                       : 0;
+
+        bgfx::setVertexBuffer(0, mesh_uptr_->get_vertex_buffer());
+        bgfx::setIndexBuffer(mesh_uptr_->get_index_buffer());
+
+        if (auto const albedo_texture_it = textures_.find(TextureType::Albedo);
+            albedo_texture_it != textures_.end()) {
+            albedo_texture_it->second.submit(albedo_texture_uniform_.get(), 0);
         }
-
-        constexpr uint64_t state = BGFX_STATE_DEFAULT | BGFX_STATE_PT_TRISTRIP;
-
-        bgfx::setVertexBuffer(0, vertex_buffer_uptr_.get());
-        bgfx::setIndexBuffer(index_buffer_uptr_.get());
 
         auto const trans_mat = transform_ptr_->get_transform_matrix();
 

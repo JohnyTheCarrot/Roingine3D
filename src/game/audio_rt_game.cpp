@@ -10,18 +10,51 @@
 
 namespace game {
     static std::array verts = {
-            engine::Vertex{-1.0f, 1.0f, 1.0f},
-            engine::Vertex{1.0f, 1.0f, 1.0f},
-            engine::Vertex{-1.0f, -1.0f, 1.0f},
-            engine::Vertex{1.0f, -1.0f, 1.0f},
-            engine::Vertex{-1.0f, 1.0f, -1.0f},
-            engine::Vertex{1.0f, 1.0f, -1.0f},
-            engine::Vertex{-1.0f, -1.0f, -1.0f},
-            engine::Vertex{1.0f, -1.0f, -1.0f},
+            // Front (+Z)
+            engine::Vertex{-1, 1, 1, 0x0000, 0x0000},  // 0
+            engine::Vertex{1, 1, 1, 0x7FFF, 0x0000},   // 1
+            engine::Vertex{-1, -1, 1, 0x0000, 0x7FFF}, // 2
+            engine::Vertex{1, -1, 1, 0x7FFF, 0x7FFF},  // 3
+                                                       // Back (-Z)
+            engine::Vertex{-1, 1, -1, 0x7FFF, 0x0000}, // 4
+            engine::Vertex{1, 1, -1, 0x0000, 0x0000},  // 5
+            engine::Vertex{-1, -1, -1, 0x7FFF, 0x7FFF},// 6
+            engine::Vertex{1, -1, -1, 0x0000, 0x7FFF}, // 7
+                                                       // Left (-X)
+            engine::Vertex{-1, 1, -1, 0x0000, 0x0000}, // 8
+            engine::Vertex{-1, 1, 1, 0x7FFF, 0x0000},  // 9
+            engine::Vertex{-1, -1, -1, 0x0000, 0x7FFF},// 10
+            engine::Vertex{-1, -1, 1, 0x7FFF, 0x7FFF}, // 11
+                                                       // Right (+X)
+            engine::Vertex{1, 1, 1, 0x0000, 0x0000},   // 12
+            engine::Vertex{1, 1, -1, 0x7FFF, 0x0000},  // 13
+            engine::Vertex{1, -1, 1, 0x0000, 0x7FFF},  // 14
+            engine::Vertex{1, -1, -1, 0x7FFF, 0x7FFF}, // 15
+                                                       // Top (+Y)
+            engine::Vertex{-1, 1, -1, 0x0000, 0x0000}, // 16
+            engine::Vertex{1, 1, -1, 0x7FFF, 0x0000},  // 17
+            engine::Vertex{-1, 1, 1, 0x0000, 0x7FFF},  // 18
+            engine::Vertex{1, 1, 1, 0x7FFF, 0x7FFF},   // 19
+                                                       // Bottom (-Y)
+            engine::Vertex{-1, -1, 1, 0x0000, 0x0000}, // 20
+            engine::Vertex{1, -1, 1, 0x7FFF, 0x0000},  // 21
+            engine::Vertex{-1, -1, -1, 0x0000, 0x7FFF},// 22
+            engine::Vertex{1, -1, -1, 0x7FFF, 0x7FFF}  // 23
     };
 
     static uint16_t const indices[] = {
-            0, 1, 2, 3, 7, 1, 5, 0, 4, 2, 6, 7, 4, 5,
+            // Front
+            0, 1, 2, 1, 3, 2,
+            // Back
+            6, 5, 4, 6, 7, 5,
+            // Left
+            8, 9, 10, 9, 11, 10,
+            // Right
+            12, 13, 14, 13, 15, 14,
+            // Top
+            16, 17, 18, 17, 19, 18,
+            // Bottom
+            20, 21, 22, 21, 23, 22
     };
 
     void AudioRTGame::setup() {
@@ -33,9 +66,18 @@ namespace game {
                 0.f, 0.f, 20.f
         );
 
-        auto  cube          = scene.create_game_object();
-        auto &mesh_renderer = cube.add_component<engine::MeshRenderer>();
-        mesh_renderer.add_mesh(verts, indices);
+        auto cube = scene.create_game_object();
+        {
+            auto mesh = std::make_unique<engine::Mesh>(
+                    engine::Mesh::IndexFormat::TriangleList, verts, indices
+            );
+
+            auto &mesh_renderer =
+                    cube.add_component<engine::MeshRenderer>(std::move(mesh));
+            mesh_renderer.add_texture(
+                    "assets/stare.png", engine::TextureType::Albedo
+            );
+        }
 
         auto &game = engine::Application::get_instance();
         game.set_active_scene(std::move(scene));

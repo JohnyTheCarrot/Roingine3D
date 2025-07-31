@@ -129,7 +129,7 @@ namespace engine {
                 }
 
                 int old_width{app.get_width()}, old_height{app.get_height()};
-                Application::get_instance().update_size([=](int &w, int &h) {
+                Application::get_instance().update_size([this](int &w, int &h) {
                     glfwGetWindowSize(window_ptr_.get(), &w, &h);
                 });
                 if (app.get_width() != old_width ||

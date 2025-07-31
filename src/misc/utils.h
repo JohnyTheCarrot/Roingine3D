@@ -19,6 +19,19 @@ namespace engine::utils {
 
     [[nodiscard]]
     float deg_to_rad(float degrees);
+
+    template<typename T>
+    [[nodiscard]]
+    T verify_bgfx_handle(T &&handle, std::string_view error_message) {
+        ;
+        if (!bgfx::isValid(handle)) {
+            throw std::runtime_error(
+                    "BGFX handle is invalid: " + std::string{error_message}
+            );
+        }
+
+        return std::forward<T>(handle);
+    }
 }// namespace engine::utils
 
 #endif//UTILS_H

@@ -7,13 +7,16 @@
 
 namespace engine {
     struct Vertex final {
-        float x_{}, y_{}, z_{};
+        float   x_{}, y_{}, z_{};
+        int16_t u_{}, v_{};
 
         static bgfx::VertexLayout layout;
 
         static void setup_layout() {
             layout.begin()
                     .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+                    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Int16,
+                         true, true)
                     .end();
         }
     };
@@ -38,6 +41,9 @@ namespace engine {
 
     using ProgramUPtr = UniqueHandle<
             bgfx::ProgramHandle, BGFX_INVALID_HANDLE, GenericBgfxDestroyer>;
+
+    using UniformUniqueHandle = UniqueHandle<
+            bgfx::UniformHandle, BGFX_INVALID_HANDLE, GenericBgfxDestroyer>;
 }// namespace engine
 
 #endif//TYPES_H

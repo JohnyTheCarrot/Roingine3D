@@ -127,7 +127,7 @@ namespace game {
 
         cam_pitch_ += delta_y * factor;
         cam_yaw_ += delta_x * factor;
-        cam_pitch_ = std::clamp(cam_pitch_, -89.0f, 89.0f);
+        cam_pitch_ = std::clamp(cam_pitch_, -45.0f, 45.0f);
         cam_yaw_   = std::fmod(cam_yaw_, 360.0f);
 
         orient();

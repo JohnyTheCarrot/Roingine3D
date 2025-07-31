@@ -22,7 +22,7 @@ namespace engine {
         }
 
     public:
-        using contents = T;
+        using handle = T;
 
         UniqueHandle() = default;
 
@@ -44,7 +44,8 @@ namespace engine {
         UniqueHandle(UniqueHandle &&other) noexcept
             : contents_{std::move(other.contents_)}
             , valid_{true} {
-            other.contents_ = T{};
+            other.contents_ = TNull;
+            other.valid_    = false;
         }
 
         UniqueHandle &operator=(UniqueHandle &&other) noexcept {
