@@ -195,4 +195,13 @@ namespace engine {
 
         mouse_commands_.erase({id, action});
     }
+
+    bool GLFWInputService::get_key_state(InputKey key) const {
+        auto const it = key_states_.find(key);
+        if (it == key_states_.end()) {
+            return false;// Key not found
+        }
+
+        return it->second.current_key_state;
+    }
 }// namespace engine

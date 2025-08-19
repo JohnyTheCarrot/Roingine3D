@@ -12,7 +12,8 @@ namespace engine {
     }
 
     void Camera::render(Game const &game) const {
-        std::array const view_mat = transform_ptr_->get_view_matrix();
+        math::SquareMatrix<> const view_mat =
+                transform_ptr_->get_view_matrix().transpose();
 
         auto const &app = Application::get_instance();
         float       proj[16];
@@ -20,9 +21,9 @@ namespace engine {
                 proj, 60.0f,
                 static_cast<float>(app.get_width()) /
                         static_cast<float>(app.get_height()),
-                0.1f, 1000.0f, bgfx::getCaps()->homogeneousDepth
+                0.1f, 10000.0f, bgfx::getCaps()->homogeneousDepth
         );
-        bgfx::setViewTransform(0, view_mat.data(), proj);
+        bgfx::setViewTransform(0, view_mat.get_span().data(), proj);
 
         {
             auto const mesh_renderers = get_registry().view<MeshRenderer>();

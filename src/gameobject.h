@@ -5,6 +5,8 @@
 #include <unordered_set>
 
 namespace engine {
+    class Scene;
+
     class Camera;
 
     namespace {
@@ -97,6 +99,12 @@ namespace engine {
 
         [[nodiscard]]
         GameObject add_child() const;
+
+        [[nodiscard]]
+        Scene const &get_scene() const;
+
+        [[nodiscard]]
+        Scene &get_scene();
     };
 }// namespace engine
 

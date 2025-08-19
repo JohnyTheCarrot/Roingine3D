@@ -1,7 +1,7 @@
 #include "gameobject.h"
 
-#include "application.h"
 #include "components/camera.h"
+#include "scene.h"
 
 namespace engine {
     bool GameObject::has_camera() const {
@@ -60,5 +60,13 @@ namespace engine {
         child.set_parent(*this);
 
         return child;
+    }
+
+    Scene const &GameObject::get_scene() const {
+        return *registry_->ctx().get<Scene *>();
+    }
+
+    Scene &GameObject::get_scene() {
+        return *registry_->ctx().get<Scene *>();
     }
 }// namespace engine

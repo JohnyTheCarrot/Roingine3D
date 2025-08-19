@@ -5,7 +5,9 @@
 #include "application.h"
 #include "components/mesh_renderer.h"
 #include "components/player.h"
+#include "graphics/mesh.h"
 #include "scene.h"
+#include "scene_loaders/gltf_loader.h"
 #include "types.h"
 
 namespace game {
@@ -58,6 +60,8 @@ namespace game {
     };
 
     void AudioRTGame::setup() {
+        using namespace engine::math;
+
         engine::Scene scene{};
 
         auto player = scene.create_game_object();
@@ -66,17 +70,28 @@ namespace game {
                 0.f, 0.f, 20.f
         );
 
-        auto cube = scene.create_game_object();
+        // engine::load_gltf_scene(
+        //         scene, "assets/too_big/main_sponza/NewSponza_Main_glTF_003.gltf"
+        // );
+
+        engine::load_gltf_scene(scene, "assets/crytech_sponza/Sponza.gltf");
+
         {
-            auto mesh = std::make_unique<engine::Mesh>(
-                    engine::Mesh::IndexFormat::TriangleList, verts, indices
+            auto                           cube = scene.create_game_object();
+            std::vector<engine::Primitive> primitives{};
+            primitives.emplace_back(
+                    engine::Primitive::IndexFormat::TriangleList, verts, indices
             );
+            auto mesh = std::make_unique<engine::Mesh>(std::move(primitives));
 
             auto &mesh_renderer =
                     cube.add_component<engine::MeshRenderer>(std::move(mesh));
             mesh_renderer.add_texture(
                     "assets/stare.png", engine::TextureType::Albedo
             );
+
+            auto &cube_transform = cube.get_component<engine::Transform>();
+            cube_transform.set_position(10.f, 0.f, 10.f);
         }
 
         auto &game = engine::Application::get_instance();

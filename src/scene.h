@@ -4,14 +4,18 @@
 #include <entt/entity/registry.hpp>
 
 #include "gameobject.h"
+#include "texture_store.h"
 
 namespace engine {
     class Game;
+
+    enum class SceneType { Gltf };
 
     class Scene final {
         std::unique_ptr<entt::registry> registry_{
                 std::make_unique<entt::registry>()
         };
+        TextureStore texture_store_{};
 
         friend class Engine;
 
@@ -22,6 +26,13 @@ namespace engine {
     public:
         Scene();
 
+        Scene(Scene &&other) noexcept;
+
+        Scene &operator=(Scene &&other) noexcept;
+
+        Scene(Scene const &)            = delete;
+        Scene &operator=(Scene const &) = delete;
+
         [[nodiscard]]
         GameObject create_game_object();
 
@@ -29,6 +40,12 @@ namespace engine {
         [[nodiscard]]
         entt::registry &get_registry() {
             return *registry_;
+        }
+
+        [[nodiscard]]
+        Texture const &
+        get_texture(std::filesystem::path const &path, TextureType type) {
+            return texture_store_.get_texture(path, type);
         }
     };
 }// namespace engine

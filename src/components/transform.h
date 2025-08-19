@@ -2,6 +2,7 @@
 #define TRANSFORM_H
 
 #include "component.h"
+#include "math/matrix.h"
 #include "math/quaternion.h"
 #include "math/vec.h"
 #include "misc/dirty.h"
@@ -10,15 +11,15 @@ namespace engine {
     class Camera;
 
     class Transform final : public Component<Transform> {
-        Dirty<math::Vec3>                position_{0.0f, 0.0f, 0.0f};
-        Dirty<math::Vec3>                scale_{1.0f, 1.0f, 1.0f};
-        Dirty<math::Quaternion>          rotation_{0.0f, 0.0f, -1.0f, 0.0f};
-        mutable std::array<float, 4 * 4> trans_mat_{};
+        mutable math::SquareMatrix<> transform_{};
+        Dirty<math::Vec3>            position_{};
+        Dirty<math::Vec3>            scale_{1.f, 1.f, 1.f};
+        Dirty<math::Quaternion>      rotation_{};
 
         friend class Camera;
 
         [[nodiscard]]
-        std::array<float, 4 * 4> get_view_matrix() const;
+        math::SquareMatrix<> get_view_matrix() const;
 
     public:
         using Component::Component;
@@ -66,7 +67,7 @@ namespace engine {
         math::Quaternion get_world_rotation() const;
 
         [[nodiscard]]
-        std::array<float, 4 * 4> get_transform_matrix() const;
+        math::SquareMatrix<> get_transform_matrix() const;
 
         void translate(math::Vec3 const &translation);
 
@@ -84,6 +85,8 @@ namespace engine {
 
         [[nodiscard]]
         math::Vec3 get_up() const;
+
+        static constexpr math::Vec3 c_DefaultForward{0.f, 0.f, -1.f};
     };
 }// namespace engine
 

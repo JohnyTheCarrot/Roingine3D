@@ -1,5 +1,7 @@
 #include "math/quaternion.h"
 
+#include <cassert>
+
 #include "quaternion_utils.h"
 
 namespace engine::math {
@@ -28,6 +30,20 @@ namespace engine::math {
     Quaternion &Quaternion::operator*=(Quaternion const &other) {
         *this = *this * other;
         return *this;
+    }
+
+    Quaternion Quaternion::rotate_between(Vec3 const &from, Vec3 const &to) {
+        Vec3 const xyz = from.cross(to);
+
+        Quaternion quat{};
+        quat.set_xyz(xyz);
+        quat.w_ = std::sqrt(
+                          from.get_magnitude_squared() *
+                          to.get_magnitude_squared()
+                  ) +
+                  from.dot(to);
+
+        return quat.normalized();
     }
 }// namespace engine::math
 

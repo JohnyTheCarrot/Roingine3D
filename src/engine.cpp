@@ -1,7 +1,11 @@
 #include "engine.h"
 
 #ifdef __linux__
+#ifdef BUILD_FOR_X11
+#define GLFW_EXPOSE_NATIVE_X11
+#else
 #define GLFW_EXPOSE_NATIVE_WAYLAND
+#endif
 #elif __WIN64
 #define GLFW_EXPOSE_NATIVE_WIN32
 #elif __APPLE__
@@ -27,9 +31,18 @@ namespace engine {
             GLFWwindow *window_ptr, bgfx::PlatformData &platform_data
     ) {
 #ifdef __linux__
+#ifndef BUILD_FOR_X11
         platform_data.ndt  = glfwGetWaylandDisplay();
         platform_data.nwh  = glfwGetWaylandWindow(window_ptr);
         platform_data.type = bgfx::NativeWindowHandleType::Wayland;
+        std::cout << "Using Wayland display\n";
+#else
+        platform_data.ndt = glfwGetX11Display();
+        platform_data.nwh =
+                reinterpret_cast<void *>(glfwGetX11Window(window_ptr));
+        platform_data.type = bgfx::NativeWindowHandleType::Default;
+        std::cout << "Using X11 display\n";
+#endif
 #elifdef __APPLE__
         platform_data.nwh = glfwGetCocoaWindow(window_ptr);
 #elifdef __WIN64
@@ -57,6 +70,11 @@ namespace engine {
             : game_ptr_{std::move(game)}
             , title_{std::move(title)}
             , window_ptr_{[&] {
+#ifdef BUILD_FOR_X11
+                glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+#else
+                glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+#endif
                 if (!glfwInit()) {
                     std::cerr << "Error: failed initializing glfw\n";
                     exit(EXIT_FAILURE);

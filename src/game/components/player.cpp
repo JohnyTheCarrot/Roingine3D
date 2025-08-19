@@ -11,9 +11,11 @@
 
 namespace game {
     void Player::orient() {
+        namespace math = engine::math;
+
         {
-            auto const         pitch_adjusted = cam_pitch_ - 90.f;
-            engine::math::Vec3 look_direction{};
+            auto const pitch_adjusted = cam_pitch_ - 90.f;
+            math::Vec3 look_direction{};
             look_direction.set_y(sin(engine::utils::deg_to_rad(pitch_adjusted))
             );
             look_direction.set_z(cos(engine::utils::deg_to_rad(pitch_adjusted))
@@ -31,14 +33,12 @@ namespace game {
             cam_transform.set_rotation(rotation);
         }
 
-        {
-            engine::math::Vec3 forward_vec{};
-            forward_vec.set_x(cos(engine::utils::deg_to_rad(cam_yaw_)));
-            forward_vec.set_z(sin(engine::utils::deg_to_rad(cam_yaw_)));
-            auto &transform =
-                    get_gameobject().get_component<engine::Transform>();
-            transform.set_rotation(forward_vec);
-        }
+        auto orientation_quat{math::Quaternion::from_axis_angle(
+                math::Vec3{0.f, 1.f, 0.f}, engine::utils::deg_to_rad(cam_yaw_)
+        )};
+
+        auto &transform = get_gameobject().get_component<engine::Transform>();
+        transform.set_rotation(orientation_quat);
     }
 
     Player::Player(entt::registry &registry)

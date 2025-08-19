@@ -17,7 +17,7 @@ namespace game {
         engine::GameObject                               camera_gameobject_;
         std::vector<engine::UniqueKeyboardCommandHandle> keyboard_commands_{};
         std::vector<engine::UniqueMouseCommandHandle>    mouse_commands_{};
-        float cam_pitch_{}, cam_yaw_{-90.f};
+        float cam_pitch_{}, cam_yaw_{};
         float rot_speed_{9.f};
 
         void orient();

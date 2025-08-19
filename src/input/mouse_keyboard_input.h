@@ -168,6 +168,9 @@ namespace engine {
         virtual void remove_command(InputKey key, KeyEventType event_type) = 0;
 
         virtual void remove_command(MouseCommandId id, MouseAction action) = 0;
+
+        [[nodiscard]]
+        virtual bool get_key_state(InputKey key) const = 0;
     };
 }// namespace engine
 

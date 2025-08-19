@@ -5,7 +5,29 @@
 #include "game/components/player.h"
 
 namespace engine {
-    Scene::Scene() = default;
+    Scene::Scene() {
+        registry_->ctx().emplace<Scene *>(this);
+    };
+
+    Scene::Scene(Scene &&other) noexcept
+        : registry_{std::move(other.registry_)}
+        , texture_store_{std::move(other.texture_store_)} {
+        auto *&ptr = registry_->ctx().get<Scene *>();
+        ptr        = this;
+    }
+
+    Scene &Scene::operator=(Scene &&other) noexcept {
+        if (this == &other)
+            return *this;
+
+        registry_      = std::move(other.registry_);
+        texture_store_ = std::move(other.texture_store_);
+
+        auto *&ptr = registry_->ctx().get<Scene *>();
+        ptr        = this;
+
+        return *this;
+    }
 
     GameObject Scene::create_game_object() {
         return {*registry_, registry_->create()};

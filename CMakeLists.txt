@@ -8,6 +8,8 @@ add_subdirectory(external/bgfx)
 add_subdirectory(external/glfw)
 add_subdirectory(external/entt)
 
+option(BUILD_FOR_X11 "Build for X11" OFF)
+
 set(CMAKE_INSTALL_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/install")
 
 bgfx_compile_shaders(
@@ -62,6 +64,7 @@ add_executable(CPP_Engine external/backward.cpp
         src/game/components/player.cpp
         src/game/commands/cam_adjust_command.h
         src/game/commands/cam_adjust_command.cpp
+
         src/include/math/vec.h
         src/api_internal/math/vec_utils.h
         src/api_internal/math/vec_utils.cpp
@@ -80,14 +83,81 @@ add_executable(CPP_Engine external/backward.cpp
         external/stb_image/std_image.cpp
         src/graphics/mesh.h
         src/graphics/mesh.cpp
+        src/scene_loaders/gltf_loader.h
+        src/scene_loaders/gltf_loader.cpp
+        src/texture_store.h
+        src/texture_store.cpp
+        src/include/math/matrix.h
+        src/misc/spaced_span.h
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include external/stb_image)
+if (BUILD_FOR_X11)
+    target_compile_definitions(CPP_Engine PRIVATE BUILD_FOR_X11)
+endif ()
 
-add_custom_target(assets ALL COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets ${CMAKE_CURRENT_BINARY_DIR}/assets
-        COMMENT "Copying assets to build directory")
+include(FetchContent)
+FetchContent_Declare(
+        fastgltf
+        GIT_REPOSITORY https://github.com/spnda/fastgltf
+        GIT_TAG v0.9.0
+)
+FetchContent_MakeAvailable(fastgltf)
+add_dependencies(${PROJECT_NAME} fastgltf)
+
+FetchContent_Declare(
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v3.9.1
+)
+
+FetchContent_MakeAvailable(Catch2)
+
+add_executable(tests
+        src/tests/spaced_span.test.cpp
+        src/tests/matrix.test.cpp
+)
+target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+target_include_directories(tests PRIVATE src src/include)
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include external/stb_image src src/include)
+
+set(ASSETS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+set(ASSETS_DST "${CMAKE_CURRENT_BINARY_DIR}/assets")
+set(HASH_FILE "${CMAKE_CURRENT_BINARY_DIR}/assets.sha256")
+function(compute_assets_hash outvar)
+    file(GLOB_RECURSE asset_files RELATIVE "${ASSETS_SRC}" "${ASSETS_SRC}/*")
+    list(SORT asset_files) # Ensure deterministic ordering
+
+    set(hash_list_file "${CMAKE_CURRENT_BINARY_DIR}/assets_hashes.txt")
+
+    file(WRITE "${hash_list_file}" "") # Start fresh
+
+    foreach (asset_file IN LISTS asset_files)
+        file(SHA256 "${ASSETS_SRC}/${asset_file}" file_hash)
+        file(APPEND "${hash_list_file}" "${file_hash}  ${asset_file}\n")
+    endforeach ()
+
+    # Hash the list to give a global hash
+    file(SHA256 "${hash_list_file}" dir_hash)
+    set(${outvar} "${dir_hash}" PARENT_SCOPE)
+endfunction()
+
+compute_assets_hash(CURRENT_HASH)
+file(WRITE "${HASH_FILE}.new" "${CURRENT_HASH}")
+
+add_custom_command(
+        OUTPUT "${HASH_FILE}"
+        COMMAND ${CMAKE_COMMAND}
+        -DASSETS_SRC=${ASSETS_SRC}
+        -DASSETS_DST=${ASSETS_DST}
+        -DHASH_FILE=${HASH_FILE}
+        -P "${CMAKE_CURRENT_SOURCE_DIR}/scripts/copy-assets.cmake"
+        DEPENDS "${HASH_FILE}.new"
+        COMMENT "Copying assets if contents changed"
+        VERBATIM
+)
+add_custom_target(assets ALL DEPENDS "${HASH_FILE}")
+
 add_dependencies(${PROJECT_NAME} assets)
 
-target_include_directories(${PROJECT_NAME} PRIVATE src src/include)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx glfw EnTT::EnTT)
+target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx glfw EnTT::EnTT fastgltf::fastgltf)

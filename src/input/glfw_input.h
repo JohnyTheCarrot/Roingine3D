@@ -56,6 +56,9 @@ namespace engine {
         void remove_command(InputKey key, KeyEventType event_type) override;
 
         void remove_command(MouseCommandId id, MouseAction action) override;
+
+        [[nodiscard]]
+        bool get_key_state(InputKey key) const override;
     };
 }// namespace engine
 

@@ -14,14 +14,15 @@ namespace engine::math {
     template<typename T, std::size_t N>
         requires std::is_arithmetic_v<T> && (N > 1)
     class Vec final {
-        std::array<T, N> data_{};
+        using Data = std::array<T, N>;
+        Data data_{};
 
     public:
         Vec() = default;
 
         template<typename... Args>
             requires std::disjunction_v<std::is_convertible<Args, T>...>
-        explicit Vec(Args... args)
+        constexpr explicit Vec(Args... args)
             : data_{args...} {
             static_assert(
                     sizeof...(args) == N,
@@ -29,15 +30,57 @@ namespace engine::math {
             );
         }
 
-        explicit Vec(std::array<T, N> &&data)
+        template<std::size_t Count = N>
+            requires(Count > 2)
+        constexpr Vec(Vec<T, N - 1> const &other, T last) {
+            std::copy(other.cbegin(), other.cend(), data_.begin());
+            data_[N - 1] = last;
+        }
+
+        constexpr explicit Vec(std::array<T, N> &&data)
             : data_{std::move(data)} {
+        }
+
+        constexpr explicit Vec(std::span<T const, N> data) {
+            std::copy(data.cbegin(), data.cend(), data_.begin());
+        }
+
+        [[nodiscard]]
+        constexpr typename Data::const_iterator cbegin() const noexcept {
+            return data_.cbegin();
+        }
+
+        [[nodiscard]]
+        constexpr typename Data::const_iterator cend() const noexcept {
+            return data_.cend();
+        }
+
+        [[nodiscard]]
+        constexpr Data const &get_data() const {
+            return data_;
         }
 
         template<std::size_t I>
             requires(I < N)
         [[nodiscard]]
-        T get() const {
+        T &get() const {
             return data_[I];
+        }
+
+        [[nodiscard]]
+        T &operator[](std::size_t index) {
+            if (index >= N) {
+                throw std::out_of_range{"Index out of range"};
+            }
+            return data_[index];
+        }
+
+        [[nodiscard]]
+        T operator[](std::size_t index) const {
+            if (index >= N) {
+                throw std::out_of_range{"Index out of range"};
+            }
+            return data_[index];
         }
 
         [[nodiscard]]
@@ -77,7 +120,7 @@ namespace engine::math {
             data_[2] = z;
         }
 
-        template<std::size_t M = N, std::enable_if_t<(M > 4), bool> = true>
+        template<std::size_t M = N, std::enable_if_t<(M >= 4), bool> = true>
         [[nodiscard]]
         Vec<T, 3> get_xyz() const {
             return Vec<T, 3>{data_[0], data_[1], data_[2]};
@@ -127,6 +170,14 @@ namespace engine::math {
         Vec &operator+=(Vec const &other) {
             *this = *this + other;
             return *this;
+        }
+
+        [[nodiscard]]
+        Vec operator-() const {
+            Vec clone{*this};
+            for (auto &element : clone.data_) { element = -element; }
+
+            return clone;
         }
 
         [[nodiscard]]
@@ -220,17 +271,23 @@ namespace engine::math {
                 typename U                                          = T,
                 std::enable_if_t<std::is_floating_point_v<U>, bool> = true>
         [[nodiscard]]
-        U get_magnitude() const {
+        U get_magnitude_squared() const {
             auto const squared =
                     data_ | std::views::transform([](auto element) {
                         return element * element;
                     });
 
-            auto const summed = std::accumulate(
+            return std::accumulate(
                     squared.cbegin(), squared.cend(), T{0}, std::plus<T>{}
             );
+        }
 
-            return std::sqrt(summed);
+        template<
+                typename U                                          = T,
+                std::enable_if_t<std::is_floating_point_v<U>, bool> = true>
+        [[nodiscard]]
+        U get_magnitude() const {
+            return std::sqrt(get_magnitude_squared());
         }
 
         template<
@@ -285,6 +342,13 @@ namespace engine::math {
             os << "}";
             return os;
         }
+
+        friend Vec operator/(T lhs, Vec const &rhs) {
+            Vec result{rhs};
+            result /= T{1} / lhs;
+
+            return result;
+        }
     };
 
     template<typename T>
@@ -295,9 +359,11 @@ namespace engine::math {
 
     using Vec2f = Vec<float, 2>;
     using Vec3f = Vec<float, 3>;
+    using Vec4f = Vec<float, 4>;
 
     using Vec2 = Vec2f;
     using Vec3 = Vec3f;
+    using Vec4 = Vec4f;
 }// namespace engine::math
 
 #endif//VEC3_H
