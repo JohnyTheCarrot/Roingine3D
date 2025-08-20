@@ -76,24 +76,6 @@ namespace game {
 
         engine::load_gltf_scene(scene, "assets/crytech_sponza/Sponza.gltf");
 
-        {
-            auto                           cube = scene.create_game_object();
-            std::vector<engine::Primitive> primitives{};
-            primitives.emplace_back(
-                    engine::Primitive::IndexFormat::TriangleList, verts, indices
-            );
-            auto mesh = std::make_unique<engine::Mesh>(std::move(primitives));
-
-            auto &mesh_renderer =
-                    cube.add_component<engine::MeshRenderer>(std::move(mesh));
-            mesh_renderer.add_texture(
-                    "assets/stare.png", engine::TextureType::Albedo
-            );
-
-            auto &cube_transform = cube.get_component<engine::Transform>();
-            cube_transform.set_position(10.f, 0.f, 10.f);
-        }
-
         auto &game = engine::Application::get_instance();
         game.set_active_scene(std::move(scene));
     }

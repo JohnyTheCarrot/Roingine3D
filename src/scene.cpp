@@ -10,8 +10,7 @@ namespace engine {
     };
 
     Scene::Scene(Scene &&other) noexcept
-        : registry_{std::move(other.registry_)}
-        , texture_store_{std::move(other.texture_store_)} {
+        : registry_{std::move(other.registry_)} {
         auto *&ptr = registry_->ctx().get<Scene *>();
         ptr        = this;
     }
@@ -20,8 +19,7 @@ namespace engine {
         if (this == &other)
             return *this;
 
-        registry_      = std::move(other.registry_);
-        texture_store_ = std::move(other.texture_store_);
+        registry_ = std::move(other.registry_);
 
         auto *&ptr = registry_->ctx().get<Scene *>();
         ptr        = this;

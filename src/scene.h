@@ -15,7 +15,6 @@ namespace engine {
         std::unique_ptr<entt::registry> registry_{
                 std::make_unique<entt::registry>()
         };
-        TextureStore texture_store_{};
 
         friend class Engine;
 
@@ -40,12 +39,6 @@ namespace engine {
         [[nodiscard]]
         entt::registry &get_registry() {
             return *registry_;
-        }
-
-        [[nodiscard]]
-        Texture const &
-        get_texture(std::filesystem::path const &path, TextureType type) {
-            return texture_store_.get_texture(path, type);
         }
     };
 }// namespace engine

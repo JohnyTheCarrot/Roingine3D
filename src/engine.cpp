@@ -192,6 +192,7 @@ namespace engine {
     }
 
     Engine::~Engine() {
+        TextureStore::get_instance().clear();
         Application::get_instance().clear_active_scene();
         bgfx::shutdown();
         glfwTerminate();

@@ -3,8 +3,6 @@
 
 #include <fastgltf/core.hpp>
 
-#include "graphics/mesh.h"
-
 namespace engine {
     class Scene;
 

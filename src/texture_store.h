@@ -2,20 +2,60 @@
 #define TEXTURE_STORE_H
 
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 #include "graphics/texture.h"
+#include "misc/singleton.h"
 
 namespace engine {
-    class TextureStore final {
-        std::unordered_map<std::string, Texture> store_;
+    class TextureHandle;
+
+    class TextureStore final : public Singleton<TextureStore> {
+        std::vector<Texture> textures_;
+        UniformUniqueHandle  albedo_texture_uniform_{
+                bgfx::createUniform("u_albedo", bgfx::UniformType::Sampler)
+        };
+
+        friend class TextureHandle;
 
     public:
         TextureStore() = default;
 
+        TextureHandle add_texture(std::string const &name, Texture &&texture);
+
+        TextureHandle add_texture(
+                std::span<stbi_uc const> image_data, std::string const &name
+        );
+
+        void clear() {
+            albedo_texture_uniform_.reset();
+            textures_.clear();
+        }
+
         [[nodiscard]]
-        Texture const &
-        get_texture(std::filesystem::path const &path, TextureType type);
+        UniformUniqueHandle::handle get_albedo_texture_uniform() const {
+            return albedo_texture_uniform_.get();
+        }
+    };
+
+    class TextureHandle final {
+        std::optional<std::size_t> index_{};
+
+        friend class TextureStore;
+
+    public:
+        TextureHandle() = default;
+
+        explicit TextureHandle(std::size_t index)
+            : index_{index} {
+        }
+
+        [[nodiscard]]
+        Texture const &operator*() const;
+
+        Texture const *operator->() const;
+
+        [[nodiscard]] operator bool() const;
     };
 }// namespace engine
 

@@ -4,6 +4,7 @@
 #include <fastgltf/types.hpp>
 #include <iostream>
 #include <limits>
+#include <span>
 
 #include "components/mesh_renderer.h"
 #include "components/transform.h"
@@ -119,6 +120,7 @@ namespace engine {
                 if (!result)
                     continue;
 
+                TextureIndices texture_indices{};
                 if (primitive.materialIndex.has_value()) {
                     auto const &mat =
                             asset.materials[primitive.materialIndex.value()];
@@ -127,6 +129,9 @@ namespace engine {
                     if (albedo_texture_info.has_value()) {
                         auto &texture = asset.textures[albedo_texture_info
                                                                ->textureIndex];
+                        if (texture.imageIndex.has_value())
+                            texture_indices.albedo_ =
+                                    TextureHandle{texture.imageIndex.value()};
                     }
                 }
 
@@ -158,21 +163,53 @@ namespace engine {
                         case fastgltf::PrimitiveType::TriangleStrip:
                             return Primitive::IndexFormat::TriangleStrip;
                         default:
-                            throw std::runtime_error{
-                                    "Unsupported primitive type: " +
+                            throw std::runtime_error{std::format(
+                                    "Unsupported primitive type: {}",
                                     static_cast<int>(primitive.type)
-                            };
+                            )};
                     }
                 }();
 
                 mesh.primitives_.emplace_back(
-                        primitive_type, vertices, indices
+                        primitive_type, vertices, indices, texture_indices
                 );
             }
 
             return mesh;
         }
     };// namespace gltf_mesh_loading
+
+    void load_image(fastgltf::Image &image, std::filesystem::path const &cwd) {
+        std::string const img_name{image.name};
+
+        auto texture = std::visit(
+                fastgltf::visitor{
+                        [](auto &) -> Texture {
+                            throw std::runtime_error{"Unhandled image format"};
+                        },
+                        [&](fastgltf::sources::URI const &file_path
+                        ) -> Texture {
+                            auto const path = cwd / file_path.uri.string();
+
+                            return Texture{path, img_name};
+                        },
+                        [&](fastgltf::sources::Array &array) {
+                            return Texture{
+                                    std::span{
+                                            reinterpret_cast<stbi_uc const *>(
+                                                    array.bytes.data()
+                                            ),
+                                            array.bytes.size()
+                                    },
+                                    img_name
+                            };
+                        },
+                },
+                image.data
+        );
+
+        TextureStore::get_instance().add_texture(img_name, std::move(texture));
+    }
 
     constexpr fastgltf::Options gltf_options{
             fastgltf::Options::DecomposeNodeMatrices |
@@ -206,6 +243,10 @@ namespace engine {
             };
         }
 
+        for (auto &image : asset->images) {
+            load_image(image, scene_file_path.parent_path());
+        }
+
         std::vector<Mesh> meshes;
         meshes.reserve(asset->meshes.size());
         for (auto const &gltf_mesh : asset->meshes) {
@@ -227,20 +268,8 @@ namespace engine {
                 obj.set_parent(*parent_ptr);
             }
 
-            // auto      gltf_mat = fastgltf::getTransformMatrix(node);
-            // std::span mat_span{gltf_mat.data(), gltf_mat.size_bytes()};
-            // math::SquareMatrix<> mat{mat_span};
             auto const &[translation, rotation, scale] =
                     std::get<fastgltf::TRS>(node.transform);
-            std::cout << "Loaded mesh: " << node.name << '\n';
-            std::cout << "tX = " << translation.x()
-                      << ", tY = " << translation.y()
-                      << ", tZ = " << translation.z() << '\n';
-            std::cout << "rX = " << rotation.x() << ", rY = " << rotation.y()
-                      << ", rZ = " << rotation.z() << ", rW = " << rotation.w()
-                      << '\n';
-            std::cout << "sX = " << scale.x() << ", sY = " << scale.y()
-                      << ", sZ = " << scale.z() << '\n';
 
             auto &transform = obj.add_component<Transform>();
             transform.set_position(
@@ -258,58 +287,14 @@ namespace engine {
             if (!node.meshIndex.has_value())
                 return;
 
-            auto &mesh     = meshes.at(node.meshIndex.value());
-            auto &renderer = obj.add_component<MeshRenderer>(
+            auto &mesh = meshes.at(node.meshIndex.value());
+            obj.add_component<MeshRenderer>(
                     std::make_unique<Mesh>(std::move(mesh))
             );
-            renderer.add_texture("assets/stare.png", TextureType::Albedo);
         };
 
         for (auto const scene_node : gltf_scene.nodeIndices) {
             fn(scene_node, fn);
         }
-        return;
-        fastgltf::iterateSceneNodes(
-                asset.get(), scene_index, fastgltf::math::fmat4x4(),
-                [&](fastgltf::Node &node, fastgltf::math::fmat4x4) {
-                    auto obj = scene.create_game_object();
-
-                    if (!node.meshIndex.has_value())
-                        return;
-
-                    auto &mesh     = meshes.at(node.meshIndex.value());
-                    auto &renderer = obj.add_component<MeshRenderer>(
-                            std::make_unique<Mesh>(std::move(mesh))
-                    );
-                    renderer.add_texture(
-                            "assets/stare.png", TextureType::Albedo
-                    );
-                    auto &transform_ptr = obj.get_component<Transform>();
-                    auto const &[translation, rotation, scale] =
-                            std::get<fastgltf::TRS>(node.transform);
-                    transform_ptr.set_position(
-                            translation.x(), translation.y(), translation.z()
-                    );
-                    transform_ptr.set_rotation(
-                            rotation.x(), rotation.y(), rotation.z(),
-                            rotation.w()
-                    );
-                    auto constexpr temp_scale = 0.3f;
-                    transform_ptr.set_scale(
-                            scale.x() + temp_scale, scale.y() + temp_scale,
-                            scale.z() + temp_scale
-                    );
-                    std::cout << "Loaded mesh: " << node.name << '\n';
-                    std::cout << "tX = " << translation.x()
-                              << ", tY = " << translation.y()
-                              << ", tZ = " << translation.z() << '\n';
-                    std::cout << "rX = " << rotation.x()
-                              << ", rY = " << rotation.y()
-                              << ", rZ = " << rotation.z()
-                              << ", rW = " << rotation.w() << '\n';
-                    std::cout << "sX = " << scale.x() << ", sY = " << scale.y()
-                              << ", sZ = " << scale.z() << '\n';
-                }
-        );
     }
 }// namespace engine

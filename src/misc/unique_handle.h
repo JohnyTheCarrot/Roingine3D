@@ -68,6 +68,10 @@ namespace engine {
             valid_    = true;
         }
 
+        void reset() {
+            destroy_contents();
+        }
+
         T &get() {
             return contents_;
         }

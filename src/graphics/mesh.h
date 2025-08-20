@@ -1,12 +1,20 @@
 #ifndef MESH_H
 #define MESH_H
 
+#include <optional>
 #include <span>
 #include <vector>
 
+#include "texture_store.h"
 #include "types.h"
 
 namespace engine {
+    class Texture;
+
+    struct TextureIndices final {
+        TextureHandle albedo_{};
+    };
+
     class Primitive final {
     public:
         enum class IndexFormat {
@@ -15,7 +23,8 @@ namespace engine {
         };
         Primitive(
                 IndexFormat format, std::span<Vertex const> vertices,
-                std::span<Index const> indices
+                std::span<Index const> indices,
+                TextureIndices const  &texture_indices
         );
         Primitive(Primitive const &)            = delete;
         Primitive(Primitive &&)                 = default;
@@ -37,10 +46,16 @@ namespace engine {
             return index_buffer_uptr_.get();
         }
 
+        [[nodiscard]]
+        TextureIndices const &get_texture_indices() const {
+            return texture_indices_;
+        }
+
     private:
         VertexBufferUPtr vertex_buffer_uptr_{};
         IndexBufferUPtr  index_buffer_uptr_{};
         IndexFormat      index_format_;
+        TextureIndices   texture_indices_;
     };
 
     struct Mesh final {

@@ -13,14 +13,6 @@ namespace engine {
         , mesh_uptr_{std::move(mesh_uptr)} {
     }
 
-    void MeshRenderer::add_texture(
-            std::filesystem::path const &path, TextureType type
-    ) {
-        auto const &tex_ptr =
-                get_gameobject().get_scene().get_texture(path, type);
-        textures_.emplace(type, &tex_ptr);
-    }
-
     void MeshRenderer::render() const {
         for (auto const &primitive : mesh_uptr_->primitives_) {
             uint64_t state = BGFX_STATE_DEFAULT | BGFX_STATE_WRITE_RGB |
@@ -34,12 +26,9 @@ namespace engine {
             bgfx::setVertexBuffer(0, primitive.get_vertex_buffer());
             bgfx::setIndexBuffer(primitive.get_index_buffer());
 
-            if (auto const albedo_texture_it =
-                        textures_.find(TextureType::Albedo);
-                albedo_texture_it != textures_.end()) {
-                albedo_texture_it->second->submit(
-                        albedo_texture_uniform_.get(), 0
-                );
+            auto const &texture_indices = primitive.get_texture_indices();
+            if (texture_indices.albedo_) {
+                texture_indices.albedo_->submit(TextureType::Albedo, 0);
             }
 
             auto const trans_mat =
