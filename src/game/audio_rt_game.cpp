@@ -44,21 +44,6 @@ namespace game {
             engine::Vertex{1, -1, -1, 0x7FFF, 0x7FFF}  // 23
     };
 
-    static uint16_t const indices[] = {
-            // Front
-            0, 1, 2, 1, 3, 2,
-            // Back
-            6, 5, 4, 6, 7, 5,
-            // Left
-            8, 9, 10, 9, 11, 10,
-            // Right
-            12, 13, 14, 13, 15, 14,
-            // Top
-            16, 17, 18, 17, 19, 18,
-            // Bottom
-            20, 21, 22, 21, 23, 22
-    };
-
     void AudioRTGame::setup() {
         using namespace engine::math;
 
@@ -70,11 +55,25 @@ namespace game {
                 0.f, 0.f, 20.f
         );
 
-        // engine::load_gltf_scene(
-        //         scene, "assets/too_big/main_sponza/NewSponza_Main_glTF_003.gltf"
-        // );
+        {
+            auto const scene_path = std::getenv("SCENE");
+            if (!scene_path) {
+                throw std::runtime_error{"SCENE environment variable is not set"
+                };
+            }
+            engine::load_gltf_scene(scene, scene_path);
+        }
 
-        engine::load_gltf_scene(scene, "assets/crytech_sponza/Sponza.gltf");
+        // Vec3 spawnPos{0.f, 0.f, 0.f};
+        // int  i = 0;
+        // for (auto &scene_path : scenes) {
+        //     engine::GameObject scene1 = scene.create_game_object();
+        //     auto &transform = scene1.add_component<engine::Transform>();
+        //     transform.set_position(spawnPos);
+        //     engine::load_gltf_scene(scene, scene_path);
+        //
+        //     ++i;
+        // }
 
         auto &game = engine::Application::get_instance();
         game.set_active_scene(std::move(scene));

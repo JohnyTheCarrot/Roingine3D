@@ -80,6 +80,7 @@ namespace engine {
                     exit(EXIT_FAILURE);
                 }
                 glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+                glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
                 return glfwCreateWindow(
                         width, height, title_.c_str(), nullptr, nullptr

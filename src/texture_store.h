@@ -15,6 +15,9 @@ namespace engine {
         UniformUniqueHandle  albedo_texture_uniform_{
                 bgfx::createUniform("u_albedo", bgfx::UniformType::Sampler)
         };
+        UniformUniqueHandle base_color_factor_{bgfx::createUniform(
+                "u_baseColorFactor", bgfx::UniformType::Vec4
+        )};
 
         friend class TextureHandle;
 
@@ -29,12 +32,18 @@ namespace engine {
 
         void clear() {
             albedo_texture_uniform_.reset();
+            base_color_factor_.reset();
             textures_.clear();
         }
 
         [[nodiscard]]
         UniformUniqueHandle::handle get_albedo_texture_uniform() const {
             return albedo_texture_uniform_.get();
+        }
+
+        [[nodiscard]]
+        UniformUniqueHandle::handle get_base_color_factor() const {
+            return base_color_factor_.get();
         }
     };
 

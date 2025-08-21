@@ -3,7 +3,7 @@
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
 #include <iostream>
-#include <limits>
+#include <magic_enum.hpp>
 #include <span>
 
 #include "components/mesh_renderer.h"
@@ -43,7 +43,8 @@ namespace engine {
         static void read_vertices(
                 fastgltf::Asset const    &asset,
                 fastgltf::Accessor const &posAccessor,
-                std::vector<Vertex>      &vertices
+                std::vector<Vertex> &vertices, math::Vec3 &min_pos,
+                math::Vec3 &max_pos
         ) {
             vertices.resize(posAccessor.count);
 
@@ -53,9 +54,22 @@ namespace engine {
                     [&](fastgltf::math::fvec3 const &pos, std::size_t idx) {
                         auto &vertex = vertices.at(idx);
 
+                        if (pos.x() < min_pos.get_x())
+                            min_pos.set_x(pos.x());
+                        if (pos.y() < min_pos.get_y())
+                            min_pos.set_y(pos.y());
+                        if (pos.z() < min_pos.get_z())
+                            min_pos.set_z(pos.z());
+                        if (pos.x() > max_pos.get_x())
+                            max_pos.set_x(pos.x());
+                        if (pos.y() > max_pos.get_y())
+                            max_pos.set_y(pos.y());
+                        if (pos.z() > max_pos.get_z())
+                            max_pos.set_z(pos.z());
+
                         vertex.x_ = pos.x();
                         vertex.y_ = pos.y();
-                        vertex.z_ = pos.z();
+                        vertex.z_ = -pos.z();
 
                         vertex.u_ = 0;
                         vertex.v_ = 0;
@@ -74,14 +88,8 @@ namespace engine {
                     [&](fastgltf::math::fvec2 const &tex_coord,
                         std::size_t                  idx) {
                         auto &vertex = vertices[idx];
-                        vertex.u_    = static_cast<int16_t>(
-                                tex_coord.x() *
-                                std::numeric_limits<int16_t>::max()
-                        );
-                        vertex.v_ = static_cast<int16_t>(
-                                tex_coord.y() *
-                                std::numeric_limits<int16_t>::max()
-                        );
+                        vertex.u_    = tex_coord.x();
+                        vertex.v_    = tex_coord.y();
                     }
             );
         }
@@ -100,11 +108,16 @@ namespace engine {
                 }
 
                 std::vector<Vertex> vertices;
-                auto                result = read_accessor(
+                auto const lowest_float = {std::numeric_limits<float>::lowest()
+                };
+                math::Vec3 min_pos, max_pos{};
+                auto       result = read_accessor(
                         asset, primitive, pos_attr,
-                        [&asset,
-                         &vertices](fastgltf::Accessor const &pos_accessor) {
-                            read_vertices(asset, pos_accessor, vertices);
+                        [&](fastgltf::Accessor const &pos_accessor) {
+                            read_vertices(
+                                    asset, pos_accessor, vertices, min_pos,
+                                    max_pos
+                            );
                         }
                 );
                 if (!result)
@@ -120,6 +133,7 @@ namespace engine {
                 if (!result)
                     continue;
 
+                math::Vec4     base_color_factor{1.0f, 1.0f, 1.0f, 1.0f};
                 TextureIndices texture_indices{};
                 if (primitive.materialIndex.has_value()) {
                     auto const &mat =
@@ -132,6 +146,12 @@ namespace engine {
                         if (texture.imageIndex.has_value())
                             texture_indices.albedo_ =
                                     TextureHandle{texture.imageIndex.value()};
+                        base_color_factor = math::Vec4{
+                                mat.pbrData.baseColorFactor[0],
+                                mat.pbrData.baseColorFactor[1],
+                                mat.pbrData.baseColorFactor[2],
+                                mat.pbrData.baseColorFactor[3]
+                        };
                     }
                 }
 
@@ -147,11 +167,14 @@ namespace engine {
                 if (index_accessor.componentType !=
                             fastgltf::ComponentType::UnsignedByte &&
                     index_accessor.componentType !=
-                            fastgltf::ComponentType::UnsignedShort)
-                    throw std::runtime_error{
+                            fastgltf::ComponentType::UnsignedShort &&
+                    index_accessor.componentType !=
+                            fastgltf::ComponentType::UnsignedInt)
+                    throw std::runtime_error{std::format(
                             "Mesh primitive indices accessor has unsupported "
-                            "component type"
-                    };
+                            "component type: {}",
+                            magic_enum::enum_name(index_accessor.componentType)
+                    )};
 
                 fastgltf::copyFromAccessor<Index>(
                         asset, index_accessor, indices.data()
@@ -171,7 +194,8 @@ namespace engine {
                 }();
 
                 mesh.primitives_.emplace_back(
-                        primitive_type, vertices, indices, texture_indices
+                        primitive_type, vertices, indices, texture_indices,
+                        base_color_factor
                 );
             }
 
@@ -179,10 +203,12 @@ namespace engine {
         }
     };// namespace gltf_mesh_loading
 
-    void load_image(fastgltf::Image &image, std::filesystem::path const &cwd) {
-        std::string const img_name{image.name};
-
-        auto texture = std::visit(
+    [[nodiscard]]
+    Texture load_image_data(
+            std::string const &img_name, fastgltf::Asset &asset,
+            fastgltf::DataSource data, std::filesystem::path const &cwd
+    ) {
+        return std::visit(
                 fastgltf::visitor{
                         [](auto &) -> Texture {
                             throw std::runtime_error{"Unhandled image format"};
@@ -204,9 +230,39 @@ namespace engine {
                                     img_name
                             };
                         },
+                        [&](fastgltf::sources::BufferView &view) {
+                            auto &buffer_view =
+                                    asset.bufferViews[view.bufferViewIndex];
+                            auto const &buffer =
+                                    asset.buffers[buffer_view.bufferIndex];
+
+                            auto array{std::get<fastgltf::sources::Array>(
+                                    buffer.data
+                            )};
+
+                            return Texture{
+                                    std::span{
+                                            reinterpret_cast<stbi_uc const *>(
+                                                    array.bytes.data() +
+                                                    buffer_view.byteOffset
+                                            ),
+                                            buffer_view.byteLength
+                                    },
+                                    img_name
+                            };
+                        }
                 },
-                image.data
+                data
         );
+    }
+
+    void load_image(
+            fastgltf::Asset &asset, fastgltf::Image &image,
+            std::filesystem::path const &cwd
+    ) {
+        std::string const img_name{image.name};
+
+        auto texture = load_image_data(img_name, asset, image.data, cwd);
 
         TextureStore::get_instance().add_texture(img_name, std::move(texture));
     }
@@ -221,7 +277,8 @@ namespace engine {
     };
 
     void load_gltf_scene(
-            Scene &scene, std::filesystem::path const &scene_file_path
+            Scene &scene, std::filesystem::path const &scene_file_path,
+            GameObject *parent_ptr
     ) {
         auto buffer = fastgltf::MappedGltfFile::FromPath(scene_file_path);
         if (!buffer) {
@@ -242,9 +299,8 @@ namespace engine {
                     std::string{fastgltf::getErrorName(asset.error())}
             };
         }
-
         for (auto &image : asset->images) {
-            load_image(image, scene_file_path.parent_path());
+            load_image(asset.get(), image, scene_file_path.parent_path());
         }
 
         std::vector<Mesh> meshes;
@@ -294,7 +350,7 @@ namespace engine {
         };
 
         for (auto const scene_node : gltf_scene.nodeIndices) {
-            fn(scene_node, fn);
+            fn(scene_node, fn, parent_ptr);
         }
     }
 }// namespace engine

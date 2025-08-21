@@ -9,7 +9,7 @@ namespace game {
 
     class Entity final : public engine::Component<Entity> {
         engine::Transform *transform_ptr_{};
-        float              speed_{50.0f};
+        float              speed_{10.0f};
 
     public:
         explicit Entity(entt::registry &registry);

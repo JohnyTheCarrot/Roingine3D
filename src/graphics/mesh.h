@@ -5,6 +5,7 @@
 #include <span>
 #include <vector>
 
+#include "math/vec.h"
 #include "texture_store.h"
 #include "types.h"
 
@@ -24,7 +25,9 @@ namespace engine {
         Primitive(
                 IndexFormat format, std::span<Vertex const> vertices,
                 std::span<Index const> indices,
-                TextureIndices const  &texture_indices
+                TextureIndices const  &texture_indices,
+                math::Vec4 const      &base_color_factor =
+                        math::Vec4{1.0f, 1.0f, 1.0f, 1.0f}
         );
         Primitive(Primitive const &)            = delete;
         Primitive(Primitive &&)                 = default;
@@ -51,11 +54,17 @@ namespace engine {
             return texture_indices_;
         }
 
+        [[nodiscard]]
+        math::Vec4 const &get_base_color_factor() const {
+            return base_color_factor_;
+        }
+
     private:
         VertexBufferUPtr vertex_buffer_uptr_{};
         IndexBufferUPtr  index_buffer_uptr_{};
         IndexFormat      index_format_;
         TextureIndices   texture_indices_;
+        math::Vec4       base_color_factor_{1.0f, 1.0f, 1.0f, 1.0f};
     };
 
     struct Mesh final {

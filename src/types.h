@@ -7,21 +7,20 @@
 
 namespace engine {
     struct Vertex final {
-        float   x_{}, y_{}, z_{};
-        int16_t u_{}, v_{};
+        float x_{}, y_{}, z_{};
+        float u_{}, v_{};
 
         static bgfx::VertexLayout layout;
 
         static void setup_layout() {
             layout.begin()
                     .add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-                    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Int16,
-                         true, true)
+                    .add(bgfx::Attrib::TexCoord0, 2, bgfx::AttribType::Float)
                     .end();
         }
     };
 
-    using Index = uint16_t;
+    using Index = uint32_t;
 
     struct GenericBgfxDestroyer final {
         void operator()(auto const handle) const {

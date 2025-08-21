@@ -7,7 +7,8 @@ namespace engine {
     Primitive::Primitive(
             IndexFormat format, std::span<Vertex const> vertices,
             std::span<Index const> indices,
-            TextureIndices const  &texture_indices
+            TextureIndices const  &texture_indices,
+            math::Vec4 const      &base_color_factor
     )
         : vertex_buffer_uptr_{utils::verify_bgfx_handle(
                   bgfx::createVertexBuffer(
@@ -18,11 +19,13 @@ namespace engine {
           )}
         , index_buffer_uptr_{utils::verify_bgfx_handle(
                   bgfx::createIndexBuffer(
-                          bgfx::copy(indices.data(), indices.size_bytes())
+                          bgfx::copy(indices.data(), indices.size_bytes()),
+                          BGFX_BUFFER_INDEX32
                   ),
                   "failed to create index buffer"
           )}
         , index_format_{format}
-        , texture_indices_{texture_indices} {
+        , texture_indices_{texture_indices}
+        , base_color_factor_{base_color_factor} {
     }
 }// namespace engine
