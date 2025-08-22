@@ -3,22 +3,22 @@
 
 #include <vector>
 
+#include "commands/move_command.h"
 #include "components/component.h"
-#include "game/commands/move_command.h"
 #include "input/mouse_keyboard_input.h"
 
-namespace game {
+namespace engine {
     class Entity;
 
     class Player final
-        : public engine::Component<Player>
-        , public engine::Updatable {
-        Entity                                          *entity_ptr_;
-        engine::GameObject                               camera_gameobject_;
-        std::vector<engine::UniqueKeyboardCommandHandle> keyboard_commands_{};
-        std::vector<engine::UniqueMouseCommandHandle>    mouse_commands_{};
-        float cam_pitch_{}, cam_yaw_{};
-        float rot_speed_{9.f};
+        : public Component<Player>
+        , public Updatable {
+        Entity                                  *entity_ptr_;
+        GameObject                               camera_gameobject_;
+        std::vector<UniqueKeyboardCommandHandle> keyboard_commands_{};
+        std::vector<UniqueMouseCommandHandle>    mouse_commands_{};
+        float                                    cam_pitch_{}, cam_yaw_{};
+        float                                    rot_speed_{9.f};
 
         void orient();
 
@@ -33,6 +33,6 @@ namespace game {
 
         void rotate(float delta_x, float delta_y);
     };
-}// namespace game
+}// namespace engine
 
 #endif//PLAYER_H

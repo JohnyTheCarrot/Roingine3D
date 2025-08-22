@@ -55,15 +55,15 @@ add_executable(CPP_Engine external/backward.cpp
         src/input/glfw_input.h
         src/input/glfw_input.cpp
 
-        src/game/commands/move_command.h
-        src/game/commands/move_command.cpp
-        src/game/components/entity.h
-        src/game/components/entity.cpp
+        src/commands/move_command.h
+        src/commands/move_command.cpp
+        src/components/entity.h
+        src/components/entity.cpp
         src/components/transform.cpp
-        src/game/components/player.h
-        src/game/components/player.cpp
-        src/game/commands/cam_adjust_command.h
-        src/game/commands/cam_adjust_command.cpp
+        src/components/player.h
+        src/components/player.cpp
+        src/commands/cam_adjust_command.h
+        src/commands/cam_adjust_command.cpp
 
         src/include/math/vec.h
         src/api_internal/math/vec_utils.h
@@ -161,3 +161,6 @@ add_custom_target(assets ALL DEPENDS "${HASH_FILE}")
 add_dependencies(${PROJECT_NAME} assets)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx glfw EnTT::EnTT fastgltf::fastgltf)
+
+install(TARGETS ${PROJECT_NAME} DESTINATION package)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders DESTINATION package)

@@ -5,7 +5,6 @@
 #include <vector>
 
 namespace engine::utils {
-
     bgfx::Memory const *
     read_file_to_bgfx_memory(std::filesystem::path const &path) {
         std::ifstream file(path, std::ios::binary);

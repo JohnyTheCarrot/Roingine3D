@@ -4,11 +4,11 @@
 #include "components/component.h"
 #include "components/transform.h"
 
-namespace game {
+namespace engine {
     enum class MovementDirection { Forward, Backward, Left, Right, Up, Down };
 
-    class Entity final : public engine::Component<Entity> {
-        engine::Transform *transform_ptr_{};
+    class Entity final : public Component<Entity> {
+        Transform *transform_ptr_{};
         float              speed_{10.0f};
 
     public:
@@ -25,6 +25,6 @@ namespace game {
 
         void move(MovementDirection dir) const;
     };
-}// namespace game
+}// namespace engine
 
 #endif//ENTITY_H

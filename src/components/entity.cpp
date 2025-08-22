@@ -1,10 +1,10 @@
 #include "entity.h"
 
-namespace game {
+namespace engine {
     Entity::Entity(entt::registry &registry)
         : Component{registry}
         , transform_ptr_{
-                  &get_gameobject().get_or_add_component<engine::Transform>()
+                  &get_gameobject().get_or_add_component<Transform>()
           } {
     }
 
@@ -12,7 +12,7 @@ namespace game {
         auto const forward = transform_ptr_->get_forward();
         auto const up      = transform_ptr_->get_up();
         auto const right   = transform_ptr_->get_right();
-        auto const dt = engine::Application::get_instance().get_delta_time();
+        auto const dt = Application::get_instance().get_delta_time();
         auto const movement_speed = get_movement_speed() * dt;
 
         switch (dir) {
@@ -36,4 +36,4 @@ namespace game {
                 break;
         }
     }
-}// namespace game
+}// namespace engine

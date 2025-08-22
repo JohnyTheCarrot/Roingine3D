@@ -1,6 +1,6 @@
 #include "move_command.h"
 
-namespace game {
+namespace engine {
     MoveEntityCommand::MoveEntityCommand(
             Entity &entity, MovementDirection direction
     )
@@ -11,4 +11,4 @@ namespace game {
     void MoveEntityCommand::execute() const {
         entity_ptr_->move(direction_);
     }
-}// namespace game
+}// namespace engine

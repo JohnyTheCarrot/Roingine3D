@@ -19,8 +19,8 @@ namespace engine {
         for (auto const &primitive : mesh_uptr_->primitives_) {
             uint64_t state = BGFX_STATE_DEFAULT | BGFX_STATE_WRITE_RGB |
                              BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z |
-                             BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_MSAA;
-
+                             BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_MSAA |
+                             BGFX_STATE_FRONT_CCW;
             state |= primitive.get_format() ==
                                      Primitive::IndexFormat::TriangleStrip
                            ? BGFX_STATE_PT_TRISTRIP

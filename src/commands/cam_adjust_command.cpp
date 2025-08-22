@@ -1,8 +1,8 @@
 #include "cam_adjust_command.h"
 
-#include "game/components/player.h"
+#include "../components/player.h"
 
-namespace game {
+namespace engine {
     CameraAdjustCommand::CameraAdjustCommand(Player &player_ptr)
         : player_ptr_{&player_ptr} {
     }
@@ -12,4 +12,4 @@ namespace game {
                 static_cast<float>(delta_x), static_cast<float>(delta_y)
         );
     }
-}// namespace game
+}// namespace engine

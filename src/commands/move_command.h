@@ -1,13 +1,13 @@
 #ifndef MOVE_COMMAND_H
 #define MOVE_COMMAND_H
 
+#include "components/entity.h"
 #include "commands/command.h"
-#include "game/components/entity.h"
 
-namespace game {
+namespace engine {
     class Entity;
 
-    class MoveEntityCommand final : public engine::Command<> {
+    class MoveEntityCommand final : public Command<> {
         MovementDirection direction_;
         Entity           *entity_ptr_;
 
@@ -16,6 +16,6 @@ namespace game {
 
         void execute() const override;
     };
-}// namespace game
+}// namespace engine
 
 #endif//MOVE_COMMAND_H

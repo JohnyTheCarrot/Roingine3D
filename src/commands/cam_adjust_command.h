@@ -3,10 +3,10 @@
 
 #include "input/mouse_keyboard_input.h"
 
-namespace game {
+namespace engine {
     class Player;
 
-    class CameraAdjustCommand final : public engine::MouseMoveCommand {
+    class CameraAdjustCommand final : public MouseMoveCommand {
         Player *player_ptr_;
 
     public:
@@ -14,6 +14,6 @@ namespace game {
 
         void execute(int delta_x, int delta_y) const override;
     };
-}// namespace game
+}// namespace engine
 
 #endif//CAM_ADJUST_COMMAND_H

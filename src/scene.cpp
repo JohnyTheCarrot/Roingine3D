@@ -2,7 +2,7 @@
 
 #include "components/camera.h"
 #include "components/mesh_renderer.h"
-#include "game/components/player.h"
+#include "components/player.h"
 
 namespace engine {
     Scene::Scene() {
@@ -33,6 +33,7 @@ namespace engine {
 
     void Scene::update() const {
         Camera::update_of_type();
+        Player::update_of_type();
     }
 
     void Scene::render(Game const &game) const {

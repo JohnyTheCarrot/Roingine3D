@@ -69,7 +69,7 @@ namespace engine {
 
                         vertex.x_ = pos.x();
                         vertex.y_ = pos.y();
-                        vertex.z_ = -pos.z();
+                        vertex.z_ = pos.z();
 
                         vertex.u_ = 0;
                         vertex.v_ = 0;

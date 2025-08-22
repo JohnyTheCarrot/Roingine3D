@@ -2,42 +2,37 @@
 
 #include <bgfx/bgfx.h>
 
+#include "commands/cam_adjust_command.h"
 #include "components/camera.h"
 #include "entity.h"
-#include "game/commands/cam_adjust_command.h"
 #include "math/quaternion.h"
 #include "misc/service_locator.h"
 #include "misc/utils.h"
 
-namespace game {
+namespace engine {
     void Player::orient() {
-        namespace math = engine::math;
-
         {
             auto const pitch_adjusted = cam_pitch_ - 90.f;
             math::Vec3 look_direction{};
-            look_direction.set_y(sin(engine::utils::deg_to_rad(pitch_adjusted))
-            );
-            look_direction.set_z(cos(engine::utils::deg_to_rad(pitch_adjusted))
-            );
+            look_direction.set_y(sin(utils::deg_to_rad(pitch_adjusted)));
+            look_direction.set_z(cos(utils::deg_to_rad(pitch_adjusted)));
             look_direction.normalize();
 
-            engine::math::Quaternion rotation{
+            math::Quaternion rotation{
                     look_direction.get_x(), look_direction.get_y(),
                     look_direction.get_z(), 0.f
             };
 
-            auto &cam_transform =
-                    camera_gameobject_.get_component<engine::Transform>();
+            auto &cam_transform = camera_gameobject_.get_component<Transform>();
 
             cam_transform.set_rotation(rotation);
         }
 
         auto orientation_quat{math::Quaternion::from_axis_angle(
-                math::Vec3{0.f, 1.f, 0.f}, engine::utils::deg_to_rad(cam_yaw_)
+                math::Vec3{0.f, 1.f, 0.f}, utils::deg_to_rad(cam_yaw_)
         )};
 
-        auto &transform = get_gameobject().get_component<engine::Transform>();
+        auto &transform = get_gameobject().get_component<Transform>();
         transform.set_rotation(orientation_quat);
     }
 
@@ -45,48 +40,46 @@ namespace game {
         : Component{registry}
         , entity_ptr_{&get_gameobject().get_or_add_component<Entity>()}
         , camera_gameobject_{get_gameobject().add_child()} {
-        auto &input_service =
-                engine::ServiceLocator<engine::KeyboardMouseInputService>::Get(
-                );
+        auto &input_service = ServiceLocator<KeyboardMouseInputService>::Get();
 
         keyboard_commands_.emplace_back(input_service.add_command(
-                engine::InputKey::W, engine::KeyEventType::Down,
+                InputKey::W, KeyEventType::Down,
                 std::make_unique<MoveEntityCommand>(
                         *entity_ptr_, MovementDirection::Forward
                 )
         ));
         keyboard_commands_.emplace_back(input_service.add_command(
-                engine::InputKey::S, engine::KeyEventType::Down,
+                InputKey::S, KeyEventType::Down,
                 std::make_unique<MoveEntityCommand>(
                         *entity_ptr_, MovementDirection::Backward
                 )
         ));
         keyboard_commands_.emplace_back(input_service.add_command(
-                engine::InputKey::A, engine::KeyEventType::Down,
+                InputKey::A, KeyEventType::Down,
                 std::make_unique<MoveEntityCommand>(
                         *entity_ptr_, MovementDirection::Left
                 )
         ));
         keyboard_commands_.emplace_back(input_service.add_command(
-                engine::InputKey::D, engine::KeyEventType::Down,
+                InputKey::D, KeyEventType::Down,
                 std::make_unique<MoveEntityCommand>(
                         *entity_ptr_, MovementDirection::Right
                 )
         ));
         keyboard_commands_.emplace_back(input_service.add_command(
-                engine::InputKey::Space, engine::KeyEventType::Down,
+                InputKey::Space, KeyEventType::Down,
                 std::make_unique<MoveEntityCommand>(
                         *entity_ptr_, MovementDirection::Up
                 )
         ));
         keyboard_commands_.emplace_back(input_service.add_command(
-                engine::InputKey::LeftShift, engine::KeyEventType::Down,
+                InputKey::LeftShift, KeyEventType::Down,
                 std::make_unique<MoveEntityCommand>(
                         *entity_ptr_, MovementDirection::Down
                 )
         ));
 
-        camera_gameobject_.add_component<engine::Camera>();
+        camera_gameobject_.add_component<Camera>();
 
         mouse_commands_.emplace_back(input_service.add_command(
                 std::make_unique<CameraAdjustCommand>(*this)
@@ -96,7 +89,7 @@ namespace game {
 
     void Player::update() {
         auto const transform_ptr =
-                get_gameobject().get_optional_component<engine::Transform>();
+                get_gameobject().get_optional_component<Transform>();
         auto const pos = transform_ptr->get_position();
         bgfx::dbgTextPrintf(
                 0, 0, 0x0f, "{%f, %f, %f}", pos.get_x(), pos.get_y(),
@@ -122,8 +115,7 @@ namespace game {
 
     void Player::rotate(float delta_x, float delta_y) {
         auto const factor =
-                engine::Application::get_instance().get_delta_time() *
-                rot_speed_;
+                Application::get_instance().get_delta_time() * rot_speed_;
 
         cam_pitch_ += delta_y * factor;
         cam_yaw_ += delta_x * factor;
@@ -132,4 +124,4 @@ namespace game {
 
         orient();
     }
-}// namespace game
+}// namespace engine

@@ -50,7 +50,7 @@ namespace game {
         engine::Scene scene{};
 
         auto player = scene.create_game_object();
-        player.add_component<Player>();
+        player.add_component<engine::Player>();
         player.get_optional_component<engine::Transform>()->set_position(
                 0.f, 0.f, 20.f
         );
@@ -80,7 +80,6 @@ namespace game {
     }
 
     void AudioRTGame::update() {
-        Player::update_of_type();
     }
 
     void AudioRTGame::render() const {
