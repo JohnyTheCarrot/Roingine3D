@@ -28,6 +28,22 @@ bgfx_compile_shaders(
         INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
 )
 
+bgfx_compile_shaders(
+        TYPE VERTEX
+        SHADERS src/shaders/imgui_vert.sc
+        VARYING_DEF ${CMAKE_SOURCE_DIR}/src/shaders/varying.def.sc
+        OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders
+        INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
+)
+
+bgfx_compile_shaders(
+        TYPE FRAGMENT
+        SHADERS src/shaders/imgui_frag.sc
+        VARYING_DEF ${CMAKE_SOURCE_DIR}/src/shaders/varying.def.sc
+        OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders
+        INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
+)
+
 add_executable(CPP_Engine external/backward.cpp
         src/gameobject.cpp
         src/gameobject.h
@@ -45,6 +61,8 @@ add_executable(CPP_Engine external/backward.cpp
         src/application.cpp
         src/shaders/cube_vert.sc
         src/shaders/cube_frag.sc
+        src/shaders/imgui_frag.sc
+        src/shaders/imgui_vert.sc
         src/misc/utils.h
         src/misc/utils.cpp
         src/components/camera.h
@@ -89,6 +107,8 @@ add_executable(CPP_Engine external/backward.cpp
         src/texture_store.cpp
         src/include/math/matrix.h
         src/misc/spaced_span.h
+        src/gui/gui.cpp
+        src/gui/gui.h
 )
 
 if (BUILD_FOR_X11)
@@ -102,7 +122,17 @@ FetchContent_Declare(
         GIT_TAG v0.9.0
 )
 FetchContent_MakeAvailable(fastgltf)
-add_dependencies(${PROJECT_NAME} fastgltf)
+
+add_library(
+        imgui
+        STATIC
+        external/imgui/imgui.cpp
+        external/imgui/imgui_draw.cpp
+        external/imgui/imgui_tables.cpp
+        external/imgui/imgui_widgets.cpp
+)
+
+add_dependencies(${PROJECT_NAME} fastgltf imgui)
 
 FetchContent_Declare(
         Catch2
@@ -119,7 +149,7 @@ add_executable(tests
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 target_include_directories(tests PRIVATE src src/include)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include external/stb_image src src/include external/magic_enum)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include external/stb_image src src/include external/magic_enum external)
 
 set(ASSETS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 set(ASSETS_DST "${CMAKE_CURRENT_BINARY_DIR}/assets")
@@ -160,7 +190,7 @@ add_custom_target(assets ALL DEPENDS "${HASH_FILE}")
 
 add_dependencies(${PROJECT_NAME} assets)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx glfw EnTT::EnTT fastgltf::fastgltf)
+target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx glfw EnTT::EnTT fastgltf::fastgltf imgui)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION package)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders DESTINATION package)
