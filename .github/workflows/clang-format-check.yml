@@ -1,7 +1,7 @@
-# https://github.com/marketplace/actions/clang-format-check
+# https://github.com/marketplace/actions/clang-format-github-action
 
 name: clang-format Check
-on: [push, pull_request]
+on: [ push, pull_request ]
 jobs:
   formatting-check:
     name: Formatting Check
@@ -9,8 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Run clang-format style check for C/C++/Protobuf programs.
-        uses: jidicula/clang-format-action@v4.15.0
+        uses: RafikFarhad/clang-format-github-action@v3
         with:
-          clang-format-version: '20'
-          check-path: 'src'
-          fallback-style: 'Mozilla'
+          sources: 'src'
+          style: file
