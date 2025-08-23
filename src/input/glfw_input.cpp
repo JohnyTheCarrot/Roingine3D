@@ -67,11 +67,10 @@ namespace engine {
         auto const input_key = input_key_it->second;
         auto const [current_state, did_already_exist] =
                 service.key_states_.try_emplace(
-                        input_key,
-                        KeyState{
-                                .previous_key_state = false,
-                                .current_key_state  = false
-                        }
+                        input_key, KeyState{
+                                           .previous_key_state = false,
+                                           .current_key_state  = false
+                                   }
                 );
 
         auto &[previous_key_state, current_key_state] = current_state->second;

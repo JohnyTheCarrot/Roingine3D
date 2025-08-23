@@ -183,8 +183,8 @@ namespace engine::math {
                 std::size_t OurH = H>
             requires(OurW == OtherH && OurH == OtherW)
         [[nodiscard]]
-        Matrix<El, W, OtherH> operator*(Matrix<El, OtherW, OtherH> const &other
-        ) const {
+        Matrix<El, W, OtherH>
+        operator*(Matrix<El, OtherW, OtherH> const &other) const {
             Matrix<El, W, OtherH> result{};
 
             for (std::size_t i = 0; i < W; ++i) {

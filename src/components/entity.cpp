@@ -3,16 +3,14 @@
 namespace engine {
     Entity::Entity(entt::registry &registry)
         : Component{registry}
-        , transform_ptr_{
-                  &get_gameobject().get_or_add_component<Transform>()
-          } {
+        , transform_ptr_{&get_gameobject().get_or_add_component<Transform>()} {
     }
 
     void Entity::move(MovementDirection dir) const {
         auto const forward = transform_ptr_->get_forward();
         auto const up      = transform_ptr_->get_up();
         auto const right   = transform_ptr_->get_right();
-        auto const dt = Application::get_instance().get_delta_time();
+        auto const dt      = Application::get_instance().get_delta_time();
         auto const movement_speed = get_movement_speed() * dt;
 
         switch (dir) {

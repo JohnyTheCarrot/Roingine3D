@@ -9,7 +9,7 @@ namespace engine {
 
     class Entity final : public Component<Entity> {
         Transform *transform_ptr_{};
-        float              speed_{10.0f};
+        float      speed_{10.0f};
 
     public:
         explicit Entity(entt::registry &registry);

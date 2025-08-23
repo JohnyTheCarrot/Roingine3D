@@ -23,7 +23,8 @@ namespace engine {
 
         template<typename El, std::size_t SpaceBetween>
         El *index(DataEl<El> *base, std::size_t i) {
-            return reinterpret_cast<El *>(index_data<El, SpaceBetween>(base, i)
+            return reinterpret_cast<El *>(
+                    index_data<El, SpaceBetween>(base, i)
             );
         }
     }// namespace

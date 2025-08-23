@@ -169,8 +169,8 @@ namespace engine {
 
                 bgfx::setDebug(BGFX_DEBUG_TEXT);
 
-                ServiceLocator<KeyboardMouseInputService>::Get().process_input(
-                );
+                ServiceLocator<KeyboardMouseInputService>::Get()
+                        .process_input();
 
                 if (app.has_active_scene()) {
                     game_ptr_->update();

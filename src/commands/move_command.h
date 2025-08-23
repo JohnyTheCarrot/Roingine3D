@@ -1,8 +1,8 @@
 #ifndef MOVE_COMMAND_H
 #define MOVE_COMMAND_H
 
-#include "components/entity.h"
 #include "commands/command.h"
+#include "components/entity.h"
 
 namespace engine {
     class Entity;

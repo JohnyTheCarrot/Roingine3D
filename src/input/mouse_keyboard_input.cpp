@@ -15,8 +15,8 @@ namespace engine {
         service.remove_command(key, event_type);
     }
 
-    void MouseCommandHandleDestroyer::operator()(MouseCommandHandle command
-    ) const {
+    void
+    MouseCommandHandleDestroyer::operator()(MouseCommandHandle command) const {
         if (!command.keyboard_mouse_input_service_ptr_) {
             return;
         }

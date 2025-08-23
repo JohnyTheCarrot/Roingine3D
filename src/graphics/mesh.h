@@ -26,8 +26,9 @@ namespace engine {
                 IndexFormat format, std::span<Vertex const> vertices,
                 std::span<Index const> indices,
                 TextureIndices const  &texture_indices,
-                math::Vec4 const      &base_color_factor =
-                        math::Vec4{1.0f, 1.0f, 1.0f, 1.0f}
+                math::Vec4 const      &base_color_factor = math::Vec4{
+                        1.0f, 1.0f, 1.0f, 1.0f
+                }
         );
         Primitive(Primitive const &)            = delete;
         Primitive(Primitive &&)                 = default;

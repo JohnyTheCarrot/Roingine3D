@@ -58,7 +58,8 @@ namespace game {
         {
             auto const scene_path = std::getenv("SCENE");
             if (!scene_path) {
-                throw std::runtime_error{"SCENE environment variable is not set"
+                throw std::runtime_error{
+                        "SCENE environment variable is not set"
                 };
             }
             engine::load_gltf_scene(scene, scene_path);
