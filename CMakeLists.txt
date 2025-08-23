@@ -5,7 +5,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(external/bgfx)
-add_subdirectory(external/glfw)
 add_subdirectory(external/entt)
 
 option(BUILD_FOR_X11 "Build for X11" OFF)
@@ -111,6 +110,14 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(Catch2)
+
+FetchContent_Declare(
+        glfw
+        GIT_REPOSITORY https://github.com/glfw/glfw
+        GIT_TAG 3.4
+)
+
+FetchContent_MakeAvailable(glfw)
 
 add_executable(tests
         src/tests/spaced_span.test.cpp

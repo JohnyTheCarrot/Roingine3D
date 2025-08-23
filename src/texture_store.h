@@ -1,6 +1,7 @@
 #ifndef TEXTURE_STORE_H
 #define TEXTURE_STORE_H
 
+#include <optional>
 #include <string>
 #include <vector>
 

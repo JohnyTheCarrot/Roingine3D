@@ -44,9 +44,13 @@ namespace engine::math {
             requires(std::convertible_to<RowVec, Args> && ...) ||
                     (std::convertible_to<RowArray, Args> && ...)
         constexpr explicit Matrix(Args &&...args) {
-            auto it = values_.begin();
+            auto it           = values_.begin();
+            using ElementType = std::remove_reference_t<
+                    std::tuple_element_t<0, std::tuple<Args...>>>;
+
             for (auto const &vec :
-                 std::initializer_list{std::forward<Args>(args)...}) {
+                 std::initializer_list<ElementType>{std::forward<Args>(args)...
+                 }) {
                 std::copy(vec.cbegin(), vec.cend(), it);
                 it += W;
             }
@@ -183,8 +187,8 @@ namespace engine::math {
                 std::size_t OurH = H>
             requires(OurW == OtherH && OurH == OtherW)
         [[nodiscard]]
-        Matrix<El, W, OtherH>
-        operator*(Matrix<El, OtherW, OtherH> const &other) const {
+        Matrix<El, W, OtherH> operator*(Matrix<El, OtherW, OtherH> const &other
+        ) const {
             Matrix<El, W, OtherH> result{};
 
             for (std::size_t i = 0; i < W; ++i) {

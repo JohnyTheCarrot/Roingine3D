@@ -2,6 +2,7 @@
 
 #include <fastgltf/tools.hpp>
 #include <fastgltf/types.hpp>
+#include <format>
 #include <iostream>
 #include <magic_enum.hpp>
 #include <span>
@@ -108,8 +109,7 @@ namespace engine {
                 }
 
                 std::vector<Vertex> vertices;
-                auto const          lowest_float = {
-                        std::numeric_limits<float>::lowest()
+                auto const lowest_float = {std::numeric_limits<float>::lowest()
                 };
                 math::Vec3 min_pos, max_pos{};
                 auto       result = read_accessor(
@@ -214,8 +214,8 @@ namespace engine {
                         [](auto &) -> Texture {
                             throw std::runtime_error{"Unhandled image format"};
                         },
-                        [&](fastgltf::sources::URI const &file_path)
-                                -> Texture {
+                        [&](fastgltf::sources::URI const &file_path
+                        ) -> Texture {
                             auto const path = cwd / file_path.uri.string();
 
                             return Texture{path, img_name};
