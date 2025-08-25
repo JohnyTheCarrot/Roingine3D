@@ -86,8 +86,9 @@ jobs:
         with:
           # CMake cache is at ${{github.workspace}}/build/_deps but we only care about the folders ending in -build or -subbuild
           path: |
-            ${{github.workspace}}/build/_deps/*-build
-            ${{github.workspace}}/build/_deps/*-subbuild
+            ${{ steps.strings.outputs.build-output-dir }}/_deps/*-build
+            ${{ steps.strings.outputs.build-output-dir }}/_deps/*-subbuild
+            ${{ steps.strings.outputs.build-output-dir }}/external
           # Cache hash is dependent on CMakeLists files anywhere as these can change what's in the cache, as well as cmake modules files
           key: ${{ env.cache-name }}-${{ matrix.os }}-${{ matrix.cpp_compiler }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
           # it's acceptable to reuse caches for different CMakeLists content if exact match is not available
@@ -97,6 +98,8 @@ jobs:
       # end of borrowed code
 
       - name: Configure CMake
+        shell: bash
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
