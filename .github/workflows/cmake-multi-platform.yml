@@ -98,8 +98,6 @@ jobs:
       # end of borrowed code
 
       - name: Configure CMake
-        shell: bash
-        working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
