@@ -27,7 +27,7 @@ bgfx_compile_shaders(
         INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
 )
 
-add_executable(CPP_Engine external/backward.cpp
+add_executable(CPP_Engine
         src/gameobject.cpp
         src/gameobject.h
         src/components/component.h

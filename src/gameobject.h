@@ -2,6 +2,7 @@
 #define GAMEOBJECT_H
 
 #include <entt/entity/registry.hpp>
+#include <stdexcept>
 #include <unordered_set>
 
 namespace engine {
