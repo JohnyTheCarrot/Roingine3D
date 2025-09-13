@@ -64,38 +64,10 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-      # thanks https://github.com/saxbophone/CPP20-Cross-Platform-Template/blob/6991098e7f243ae9c6477c601953dd132f499e53/.github/workflows/continuous-integration.yml#L31-L62
-      - name: Cache CMake dependency source code
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-cmake-dependency-sources
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
         with:
-          # CMake cache is at ${{github.workspace}}/build/_deps but we only will cache folders ending in '-src' to cache source code
-          path: ${{github.workspace}}/build/_deps/*-src
-          # Cache hash is dependent on CMakeLists files anywhere as these can change what's in the cache, as well as cmake modules files
-          key: ${{ env.cache-name }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-          # it's acceptable to reuse caches for different CMakeLists content if exact match is not available and unlike build caches, we
-          # don't need to restrict these by OS or compiler as it's only source code that's being cached
-          restore-keys: |
-            ${{ env.cache-name }}-
-
-      - name: Cache CMake dependency build objects
-        uses: actions/cache@v4
-        env:
-          cache-name: cache-cmake-dependency-builds
-        with:
-          # CMake cache is at ${{github.workspace}}/build/_deps but we only care about the folders ending in -build or -subbuild
-          path: |
-            ${{ steps.strings.outputs.build-output-dir }}/_deps/*-build
-            ${{ steps.strings.outputs.build-output-dir }}/_deps/*-subbuild
-            ${{ steps.strings.outputs.build-output-dir }}/external
-          # Cache hash is dependent on CMakeLists files anywhere as these can change what's in the cache, as well as cmake modules files
-          key: ${{ env.cache-name }}-${{ matrix.os }}-${{ matrix.cpp_compiler }}-${{ hashFiles('**/CMakeLists.txt', 'cmake/**') }}
-          # it's acceptable to reuse caches for different CMakeLists content if exact match is not available
-          # as long as the OS and Compiler match exactly
-          restore-keys: |
-            ${{ env.cache-name }}-${{ matrix.os }}-${{ matrix.cpp_compiler  }}-
-      # end of borrowed code
+          key: ${{ github.job }}-${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.cpp_compiler }}
 
       - name: Configure CMake
         run: >
@@ -103,6 +75,8 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DCMAKE_C_COMPILER_LAUNCHER=ccache
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           ${{ matrix.extra_config }}
           -S ${{ github.workspace }}
 
