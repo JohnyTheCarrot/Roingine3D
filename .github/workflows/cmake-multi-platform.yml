@@ -46,7 +46,7 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            extra_config: ""
+            extra_config: -G Ninja
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -95,6 +95,12 @@ jobs:
           restore-keys: |
             ${{ env.cache-name }}-
       # end of borrowed code
+
+      - name: Setup MSVC Developer Command Prompt
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: TheMrMilchmann/setup-msvc-dev@v4.0.0
+        with:
+          arch: x64
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
