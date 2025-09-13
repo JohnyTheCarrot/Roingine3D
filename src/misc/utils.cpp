@@ -1,8 +1,8 @@
 #include "utils.h"
 
-#include <cmath>
 #include <format>
 #include <fstream>
+#include <numbers>
 #include <vector>
 
 namespace engine::utils {
@@ -58,6 +58,6 @@ namespace engine::utils {
     }
 
     float deg_to_rad(float degrees) {
-        return degrees * (M_PIf / 180.0f);
+        return degrees * (std::numbers::pi_v<float> / 180.0f);
     }
 }// namespace engine::utils
