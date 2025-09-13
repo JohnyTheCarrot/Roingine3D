@@ -46,15 +46,12 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            extra_config: -G Ninja
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-            extra_config: -G Ninja
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
-            extra_config: -G Ninja
         exclude:
           - os: windows-latest
             c_compiler: gcc
@@ -115,7 +112,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DCMAKE_C_COMPILER_LAUNCHER=ccache
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          ${{ matrix.extra_config }}
+          -G Ninja
           -S ${{ github.workspace }}
 
       - name: Build
