@@ -5,8 +5,24 @@ name: CMake on multiple platforms
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.c'
+      - '**.h'
+      - '**.sc'
+      - 'CMakeLists.txt'
+      - '.gitmodules'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.c'
+      - '**.h'
+      - '**.sc'
+      - 'CMakeLists.txt'
+      - '.gitmodules'
 
 jobs:
   build:
