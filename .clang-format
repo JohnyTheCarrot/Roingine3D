@@ -43,7 +43,7 @@ ContinuationIndentWidth: 8
 Cpp11BracedListStyle: true
 EmptyLineBeforeAccessModifier: LogicalBlock
 IndentCaseLabels: true
-IndentPPDirectives: None
+IndentPPDirectives: AfterHash
 IndentWidth: 4
 InsertNewlineAtEOF: true
 KeepEmptyLinesAtTheStartOfBlocks: true

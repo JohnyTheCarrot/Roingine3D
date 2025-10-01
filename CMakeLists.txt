@@ -4,7 +4,14 @@ project(CPP_Engine)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_subdirectory(external/bgfx)
+set(BGFX_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/bgfx.cmake")
+set(BGFX_DIR "${BGFX_CMAKE_DIR}/bgfx")
+set(BGFX_BUILD_EXAMPLES OFF)
+
+set(BGFX_CONFIG_SHADER_FOLDER_PATH "${CMAKE_SOURCE_DIR}/src/shaders")
+option(USES_GLFW "Use GLFW for windowing and input" ON)
+
+add_subdirectory("${BGFX_CMAKE_DIR}")
 add_subdirectory(external/entt)
 
 option(BUILD_FOR_X11 "Build for X11" OFF)
@@ -16,18 +23,22 @@ bgfx_compile_shaders(
         SHADERS src/shaders/cube_vert.sc
         VARYING_DEF ${CMAKE_SOURCE_DIR}/src/shaders/varying.def.sc
         OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders
-        INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
+        INCLUDE_DIRS "${BGFX_DIR}/src"
 )
 
 bgfx_compile_shaders(
         TYPE FRAGMENT
         SHADERS src/shaders/cube_frag.sc
         VARYING_DEF ${CMAKE_SOURCE_DIR}/src/shaders/varying.def.sc
-        OUTPUT_DIR ${CMAKE_BINARY_DIR}//shaders
-        INCLUDE_DIRS ${CMAKE_SOURCE_DIR}/external/bgfx/bgfx/src
+        OUTPUT_DIR ${CMAKE_BINARY_DIR}/shaders
+        INCLUDE_DIRS "${BGFX_DIR}/src"
 )
 
 add_executable(CPP_Engine
+        # shaders
+        src/shaders/cube_vert.sc
+        src/shaders/cube_frag.sc
+
         src/gameobject.cpp
         src/gameobject.h
         src/components/component.h
@@ -42,8 +53,6 @@ add_executable(CPP_Engine
         src/misc/unique_handle.h
         src/types.cpp
         src/application.cpp
-        src/shaders/cube_vert.sc
-        src/shaders/cube_frag.sc
         src/misc/utils.h
         src/misc/utils.cpp
         src/components/camera.h
@@ -51,8 +60,6 @@ add_executable(CPP_Engine
         src/misc/service_locator.h
         src/input/mouse_keyboard_input.h
         src/input/mouse_keyboard_input.cpp
-        src/input/glfw_input.h
-        src/input/glfw_input.cpp
 
         src/commands/move_command.h
         src/commands/move_command.cpp
@@ -88,10 +95,36 @@ add_executable(CPP_Engine
         src/texture_store.cpp
         src/include/math/matrix.h
         src/misc/spaced_span.h
+        src/presentation/game_host.h
+        src/presentation/game_bootstrap_info.h
+        src/presentation/window.h
+        src/misc/observer.h
 )
 
-if (BUILD_FOR_X11)
-    target_compile_definitions(CPP_Engine PRIVATE BUILD_FOR_X11)
+add_library(host_glfw STATIC
+        src/platform_specific/host/glfw/glfw_window.cpp
+        src/platform_specific/host/glfw/glfw_host.cpp
+        src/platform_specific/host/glfw/glfw_input.h
+        src/platform_specific/host/glfw/glfw_input.cpp
+)
+
+set(ENGINE_LIBS bgfx bx EnTT::EnTT fastgltf::fastgltf)
+
+if (USES_GLFW)
+    target_link_libraries(host_glfw PUBLIC ${ENGINE_LIBS})
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USES_GLFW)
+    target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+    target_include_directories(host_glfw  PRIVATE src src/include)
+    target_link_libraries(${PROJECT_NAME} PRIVATE host_glfw)
+endif ()
+
+if (EMSCRIPTEN)
+    set(GLFW_BUILD_X11 0)
+    set(GLFW_BUILD_WAYLAND 0)
+else ()
+    if (BUILD_FOR_X11)
+        target_compile_definitions(CPP_Engine PRIVATE BUILD_FOR_X11)
+    endif ()
 endif ()
 
 include(FetchContent)
@@ -126,7 +159,7 @@ add_executable(tests
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
 target_include_directories(tests PRIVATE src src/include)
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders external/bgfx/install/include external/stb_image src src/include external/magic_enum)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/include/generated/shaders "${BGFX_DIR}/install/include" external/stb_image src src/include external/magic_enum)
 
 set(ASSETS_SRC "${CMAKE_CURRENT_SOURCE_DIR}/assets")
 set(ASSETS_DST "${CMAKE_CURRENT_BINARY_DIR}/assets")
@@ -166,8 +199,6 @@ add_custom_command(
 add_custom_target(assets ALL DEPENDS "${HASH_FILE}")
 
 add_dependencies(${PROJECT_NAME} assets)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE bgfx bx glfw EnTT::EnTT fastgltf::fastgltf)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION package)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders DESTINATION package)

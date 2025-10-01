@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <unordered_map>
 
-#include "mouse_keyboard_input.h"
+#include "input/mouse_keyboard_input.h"
 
 namespace engine {
     class GLFWInputService final : public KeyboardMouseInputService {

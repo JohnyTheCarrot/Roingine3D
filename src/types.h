@@ -43,6 +43,8 @@ namespace engine {
 
     using UniformUniqueHandle = UniqueHandle<
             bgfx::UniformHandle, BGFX_INVALID_HANDLE, GenericBgfxDestroyer>;
+
+    using DeltaTime = float;
 }// namespace engine
 
 #endif//TYPES_H

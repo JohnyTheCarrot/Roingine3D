@@ -1,9 +1,9 @@
-[submodule "external/bgfx"]
-	path = external/bgfx
-	url = https://github.com/bkaradzic/bgfx.cmake
 [submodule "external/glfw"]
 	path = external/glfw
 	url = https://github.com/glfw/glfw.git
 [submodule "external/entt"]
 	path = external/entt
 	url = https://github.com/skypjack/entt.git
+[submodule "external/bgfx.cmake"]
+	path = external/bgfx.cmake
+	url = git@github.com:JohnyTheCarrot/bgfx.cmake.git

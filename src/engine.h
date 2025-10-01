@@ -14,13 +14,15 @@ namespace engine {
         bool                  running_{false};
         friend class Application;
 
+        void main_loop();
+
     public:
         Engine(std::unique_ptr<Game> game, std::string title, int width,
                int height);
 
         ~Engine();
 
-        void main_loop() const;
+        void enter_main_loop() const;
     };
 }// namespace engine
 

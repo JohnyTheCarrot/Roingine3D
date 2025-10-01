@@ -6,5 +6,5 @@ int main() {
             std::make_unique<game::AudioRTGame>();
     engine::Engine const engine{std::move(game), "Audio RT", 1280, 720};
 
-    engine.main_loop();
+    engine.enter_main_loop();
 }

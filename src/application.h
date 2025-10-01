@@ -3,19 +3,19 @@
 
 #include <optional>
 
-#include "engine.h"
 #include "misc/singleton.h"
 #include "scene.h"
+#include "types.h"
 
 namespace engine {
     class Application final : public Singleton<Application> {
         std::optional<Scene> scene_;
         int                  width_{};
         int                  height_{};
-        float                delta_time_{0.0f};
+        DeltaTime            delta_time_{0.0f};
         bool                 running_{false};
 
-        friend class Engine::Impl;
+        friend class GameHost;
 
     public:
         Scene &set_active_scene(Scene &&scene);
@@ -25,9 +25,22 @@ namespace engine {
         [[nodiscard]]
         float get_delta_time() const;
 
+        void set_delta_time(DeltaTime delta_time) {
+            delta_time_ = delta_time;
+        }
+
         [[nodiscard]]
         bool has_active_scene() const {
             return scene_.has_value();
+        }
+
+        [[nodiscard]]
+        bool is_shutdown_requested() const {
+            return running_;
+        }
+
+        void request_shutdown() {
+            running_ = true;
         }
 
         [[nodiscard]]
