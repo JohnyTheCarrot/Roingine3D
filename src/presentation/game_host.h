@@ -9,20 +9,25 @@
 
 namespace engine::core {
     class GameHost final {
-        class Impl;
-        std::unique_ptr<Impl> impl_ptr_;
-
     public:
-        GameHost(bootstrap_info::Info info, std::function<void()> main_loop);
+        class Impl;
+
+        GameHost(
+                bootstrap_info::Info info, std::function<void()> main_loop,
+                std::function<void()> shut_down
+        );
 
         ~GameHost();
 
         void enter_main_loop() const;
 
-        void init_platform_data(bgfx::PlatformData &platform_data) const;
+        void init_bgfx(bgfx::Init &init) const;
 
         [[nodiscard]]
         Resolution get_render_resolution() const;
+
+    private:
+        std::unique_ptr<Impl> impl_ptr_;
     };
 }// namespace engine::core
 

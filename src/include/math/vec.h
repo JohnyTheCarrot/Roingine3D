@@ -42,7 +42,7 @@ namespace engine::math {
         }
 
         constexpr explicit Vec(std::span<T const, N> data) {
-            std::copy(data.cbegin(), data.cend(), data_.begin());
+            std::copy(data.begin(), data.end(), data_.begin());
         }
 
         [[nodiscard]]
@@ -140,8 +140,7 @@ namespace engine::math {
             std::array<T, N> data_arr{};
 
             std::transform(
-                    zip.cbegin(), zip.cend(), data_arr.begin(),
-                    [&](auto zipped) {
+                    zip.begin(), zip.end(), data_arr.begin(), [&](auto zipped) {
                         return op(std::get<0>(zipped), std::get<1>(zipped));
                     }
             );
@@ -278,7 +277,7 @@ namespace engine::math {
                     });
 
             return std::accumulate(
-                    squared.cbegin(), squared.cend(), T{0}, std::plus<T>{}
+                    squared.begin(), squared.end(), T{0}, std::plus<T>{}
             );
         }
 

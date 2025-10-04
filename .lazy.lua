@@ -1,5 +1,5 @@
 require("lspconfig").clangd.setup({
-	cmd = { "clangd", "--compile-commands-dir=build/Clang-Wayland-Debug" },
+	cmd = { "clangd", "--compile-commands-dir=build/Emscripten-Debug" },
 })
 
 return {}

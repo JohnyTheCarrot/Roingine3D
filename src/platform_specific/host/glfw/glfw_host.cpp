@@ -1,10 +1,11 @@
+#include <bgfx/bgfx.h>
 #include <bx/platform.h>
 #include <chrono>
+#include <functional>
 #include <iostream>
 #include <memory>
 
 #include "application.h"
-#include "bgfx/bgfx.h"
 #include "constants.h"
 #include "glfw_incl.h"
 #include "glfw_window.h"
@@ -15,13 +16,16 @@ namespace engine::core {
     class GameHost::Impl final {
         std::unique_ptr<Window> window_ptr_;
         std::function<void()>   main_loop_{};
+        std::function<void()>   shut_down_{};
 
     public:
-        Impl(bootstrap_info::Info info, std::function<void()> main_loop)
+        Impl(bootstrap_info::Info info, std::function<void()> main_loop,
+             std::function<void()> shut_down)
             : window_ptr_{std::make_unique<Window>(
                       std::move(info.window_settings)
               )}
-            , main_loop_{std::move(main_loop)} {
+            , main_loop_{std::move(main_loop)}
+            , shut_down_{std::move(shut_down)} {
         }
 
         ~Impl() {
@@ -65,11 +69,14 @@ namespace engine::core {
 
                 main_loop_();
             }
+
+            shut_down_();
         }
 
-        void init_platform_data(bgfx::PlatformData &platform_data) const {
-            platform_data.ndt = window_ptr_->get_native_display_type();
-            platform_data.nwh = window_ptr_->get_native_handle();
+        void init_bgfx(bgfx::Init &init) const {
+            auto &platform_data = init.platformData;
+            platform_data.ndt   = window_ptr_->get_native_display_type();
+            platform_data.nwh   = window_ptr_->get_native_handle();
 #ifdef BX_PLATFORM_LINUX
 #    ifndef BUILD_FOR_X11
             platform_data.type = bgfx::NativeWindowHandleType::Wayland;
@@ -91,17 +98,18 @@ namespace engine::core {
     }
 
     GameHost::GameHost(
-            bootstrap_info::Info info, std::function<void()> main_loop
+            bootstrap_info::Info info, std::function<void()> main_loop,
+            std::function<void()> shut_down
     )
-        : impl_ptr_{
-                  std::make_unique<Impl>(std::move(info), std::move(main_loop))
-          } {
+        : impl_ptr_{std::make_unique<Impl>(
+                  std::move(info), std::move(main_loop), std::move(shut_down)
+          )} {
     }
 
     GameHost::~GameHost() = default;
 
-    void GameHost::init_platform_data(bgfx::PlatformData &platform_data) const {
-        impl_ptr_->init_platform_data(platform_data);
+    void GameHost::init_bgfx(bgfx::Init &init) const {
+        impl_ptr_->init_bgfx(init);
     }
 
     Resolution GameHost::get_render_resolution() const {

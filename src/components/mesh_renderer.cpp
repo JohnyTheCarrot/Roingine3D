@@ -16,6 +16,7 @@ namespace engine {
     void MeshRenderer::render() const {
         auto const &texture_store     = TextureStore::get_instance();
         auto const &base_color_factor = texture_store.get_base_color_factor();
+
         for (auto const &primitive : mesh_uptr_->primitives_) {
             uint64_t state = BGFX_STATE_DEFAULT | BGFX_STATE_WRITE_RGB |
                              BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z |

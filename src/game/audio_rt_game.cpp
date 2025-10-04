@@ -1,6 +1,7 @@
 #include "audio_rt_game.h"
 
-#include <array>
+#include <memory>
+#include <vector>
 
 #include "application.h"
 #include "components/mesh_renderer.h"
@@ -8,7 +9,6 @@
 #include "graphics/mesh.h"
 #include "scene.h"
 #include "scene_loaders/gltf_loader.h"
-#include "types.h"
 
 namespace game {
     static std::array verts = {
@@ -44,6 +44,21 @@ namespace game {
             engine::Vertex{1, -1, -1, 0x7FFF, 0x7FFF}  // 23
     };
 
+    static constexpr std::array<engine::Index, 36> indices = {
+            // Front (+Z)
+            0, 1, 2, 2, 1, 3,
+            // Back (-Z)
+            4, 5, 6, 6, 5, 7,
+            // Left (-X)
+            8, 9, 10, 10, 9, 11,
+            // Right (+X)
+            12, 13, 14, 14, 13, 15,
+            // Top (+Y)
+            16, 17, 18, 18, 17, 19,
+            // Bottom (-Y)
+            20, 21, 22, 22, 21, 23
+    };
+
     void AudioRTGame::setup() {
         using namespace engine::math;
 
@@ -56,25 +71,16 @@ namespace game {
         );
 
         {
-            auto const scene_path = std::getenv("SCENE");
+            //auto const scene_path = std::getenv("SCENE");
+            auto const scene_path = "assets/crytech_sponza/Sponza.gltf";
             if (!scene_path) {
                 throw std::runtime_error{
                         "SCENE environment variable is not set"
                 };
             }
             engine::load_gltf_scene(scene, scene_path);
+            std::cout << "GLTF Scene loaded" << std::endl;
         }
-
-        // Vec3 spawnPos{0.f, 0.f, 0.f};
-        // int  i = 0;
-        // for (auto &scene_path : scenes) {
-        //     engine::GameObject scene1 = scene.create_game_object();
-        //     auto &transform = scene1.add_component<engine::Transform>();
-        //     transform.set_position(spawnPos);
-        //     engine::load_gltf_scene(scene, scene_path);
-        //
-        //     ++i;
-        // }
 
         auto &game = engine::Application::get_instance();
         game.set_active_scene(std::move(scene));

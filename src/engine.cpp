@@ -1,6 +1,8 @@
 #include "engine.h"
 
 #include <bgfx/bgfx.h>
+#include <functional>
+#include <iostream>
 #include <memory>
 
 #include "application.h"
@@ -19,7 +21,7 @@ namespace engine {
     public:
         explicit Impl(
                 std::unique_ptr<Game> game, std::string title, int width,
-                int height
+                int height, std::function<void()> shut_down
         )
             : game_ptr_{std::move(game)}
             , title_{std::move(title)}
@@ -29,7 +31,8 @@ namespace engine {
                                       std::move(title), width, height
                               }
                       },
-                      std::bind(&Impl::main_loop, this)
+                      [this]() { return this->main_loop(); },
+                      std::move(shut_down)
               )}
 
         {
@@ -38,7 +41,7 @@ namespace engine {
 
         void init_engine() {
             bgfx::Init init{};
-            host_->init_platform_data(init.platformData);
+            host_->init_bgfx(init);
 
             init.resolution.width  = host_->get_render_resolution().width;
             init.resolution.height = host_->get_render_resolution().height;
@@ -62,6 +65,12 @@ namespace engine {
 
         void main_loop() {
             auto &app = Application::get_instance();
+
+            app.update_size([this](auto &width, auto &height) {
+                auto const res = host_->get_render_resolution();
+                width          = res.width;
+                height         = res.height;
+            });
 
             // This dummy draw call is here to make sure that view 0 is cleared if no
             // other draw calls are submitted to view 0.
@@ -90,15 +99,19 @@ namespace engine {
     Engine::Engine(
             std::unique_ptr<Game> game, std::string title, int width, int height
     )
-        : impl_ptr_{std::make_unique<Impl>(
-                  std::move(game), std::move(title), width, height
-          )} {
+        : impl_ptr_{new Impl{
+                  std::move(game), std::move(title), width, height,
+                  [this]() { this->cleanup(); }
+          }} {
     }
 
-    Engine::~Engine() {
+    Engine::~Engine() = default;
+
+    void Engine::cleanup() {
         TextureStore::get_instance().clear();
         Application::get_instance().clear_active_scene();
         bgfx::shutdown();
+        delete impl_ptr_;
     }
 
     void Engine::enter_main_loop() const {

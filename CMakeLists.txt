@@ -108,15 +108,38 @@ add_library(host_glfw STATIC
         src/platform_specific/host/glfw/glfw_input.cpp
 )
 
+add_library(host_emscripten STATIC
+        src/platform_specific/host/emscripten/emscripten_host.cpp
+        src/platform_specific/host/emscripten/shell.html
+)
+
 set(ENGINE_LIBS bgfx bx EnTT::EnTT fastgltf::fastgltf)
 
-if (USES_GLFW)
-    target_link_libraries(host_glfw PUBLIC ${ENGINE_LIBS})
+if (USES_GLFW AND NOT EMSCRIPTEN)
+    set(ENGINE_HOST host_glfw)
     target_compile_definitions(${PROJECT_NAME} PRIVATE USES_GLFW)
     target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
-    target_include_directories(host_glfw  PRIVATE src src/include)
-    target_link_libraries(${PROJECT_NAME} PRIVATE host_glfw)
 endif ()
+
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+if (EMSCRIPTEN)
+  if (NOT DEFINED ENV{EMSDK})
+    message(fatal_error "EMSDK is not in environment")
+  endif()
+  if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fwasm-exceptions -fsanitize=undefined")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s SAFE_HEAP=1 -s ASSERTIONS=2 --profiling-funcs -fwasm-exceptions -gsource-map -s EXCEPTION_STACK_TRACES=1 -fsanitize=undefined -sEXIT_RUNTIME=1")
+  endif()
+  target_link_options(${PROJECT_NAME} PRIVATE -sALLOW_MEMORY_GROWTH=1 --shell-file ${CMAKE_SOURCE_DIR}/src/platform_specific/host/emscripten/shell.html "SHELL:--embed-file \"${CMAKE_BINARY_DIR}/assets/crytech_sponza/@assets/crytech_sponza\" --embed-file \"${CMAKE_BINARY_DIR}/shaders@shaders\"")
+  set(CMAKE_EXECUTABLE_SUFFIX ".html")
+  set(CMAKE_TOOLCHAIN_FILE "$ENV{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" CACHE STRING "Emscripten toolchain file")
+  target_include_directories(host_emscripten PUBLIC "$ENV{EMSDK}/upstream/emscripten/cache/sysroot/include")
+  set(ENGINE_HOST host_emscripten)
+endif()
+
+target_link_libraries(${ENGINE_HOST} PUBLIC ${ENGINE_LIBS})
+target_include_directories(${ENGINE_HOST} PRIVATE src src/include)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${ENGINE_HOST})
 
 if (EMSCRIPTEN)
     set(GLFW_BUILD_X11 0)

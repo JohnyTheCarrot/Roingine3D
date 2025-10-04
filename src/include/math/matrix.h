@@ -48,8 +48,8 @@ namespace engine::math {
             using ElementType = std::remove_reference_t<
                     std::tuple_element_t<0, std::tuple<Args...>>>;
 
-            for (auto const &vec :
-                 std::initializer_list<ElementType>{std::forward<Args>(args)...
+            for (auto const &vec : std::initializer_list<ElementType>{
+                         std::forward<Args>(args)...
                  }) {
                 std::copy(vec.cbegin(), vec.cend(), it);
                 it += W;
@@ -187,8 +187,8 @@ namespace engine::math {
                 std::size_t OurH = H>
             requires(OurW == OtherH && OurH == OtherW)
         [[nodiscard]]
-        Matrix<El, W, OtherH> operator*(Matrix<El, OtherW, OtherH> const &other
-        ) const {
+        Matrix<El, W, OtherH>
+        operator*(Matrix<El, OtherW, OtherH> const &other) const {
             Matrix<El, W, OtherH> result{};
 
             for (std::size_t i = 0; i < W; ++i) {
@@ -197,7 +197,7 @@ namespace engine::math {
                     auto col_b = other.get_col(j);
 
                     result.get(i, j) = std::transform_reduce(
-                            row_a.cbegin(), row_a.cend(), col_b.cbegin(), El{0},
+                            row_a.begin(), row_a.end(), col_b.cbegin(), El{0},
                             std::plus<El>{}, [](El a, El b) { return a * b; }
                     );
                 }
@@ -215,7 +215,7 @@ namespace engine::math {
             for (std::size_t i = 0; i < W; ++i) {
                 auto row  = get_row(i);
                 result[i] = std::inner_product(
-                        row.cbegin(), row.cend(), vec.cbegin(), El{0},
+                        row.begin(), row.end(), vec.cbegin(), El{0},
                         std::plus<El>{}, [](El a, El b) { return a * b; }
                 );
             }

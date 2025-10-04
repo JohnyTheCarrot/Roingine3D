@@ -9,6 +9,7 @@
 namespace engine {
     class Transform;
 
+    // TODO: the mesh renderer should not own the mesh, the mesh should be a separate component
     class MeshRenderer : public Component<MeshRenderer> {
         Transform const      *transform_ptr_{};
         std::unique_ptr<Mesh> mesh_uptr_;
