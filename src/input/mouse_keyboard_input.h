@@ -1,6 +1,8 @@
 #ifndef MOUSE_KEYBOARD_INPUT_H
 #define MOUSE_KEYBOARD_INPUT_H
 
+// TODO: we should allow the game to select whether they want physical keys or the exact keys corresponding to the character.
+
 #include <any>
 #include <memory>
 #include <unordered_map>
@@ -138,7 +140,18 @@ namespace engine {
             UniqueHandle<MouseCommandHandle, {}, MouseCommandHandleDestroyer>;
 
     class KeyboardMouseInputService {
-        std::any data_;
+        struct KeyState {
+            bool previous_key_state{false};
+            bool current_key_state{false};
+        };
+
+        std::any                               data_;
+        KeyboardCommandMap                     keyboard_commands_;
+        MouseCommandMap                        mouse_commands_;
+        MoveMouseCommandMap                    move_mouse_commands_;
+        MouseCommandId                         move_mouse_current_id_{};
+        std::unordered_map<InputKey, KeyState> key_states_;
+
 
     protected:
         [[nodiscard]]
@@ -150,27 +163,36 @@ namespace engine {
             : data_(std::move(data)) {
         }
 
+        void execute_command(InputKey key, KeyEventType event_type) const;
+
+        // mouse move
+        void execute_command(int delta_x, int delta_y) const;
+
+        void change_key_state(InputKey key, bool is_key_down);
+
     public:
         virtual ~KeyboardMouseInputService() = default;
 
-        virtual void process_input() = 0;
+        void process_input();
 
         [[nodiscard]]
-        virtual UniqueKeyboardCommandHandle add_command(
+        UniqueKeyboardCommandHandle add_command(
                 InputKey key, KeyEventType event_type,
                 std::unique_ptr<Command<>> command
-        ) = 0;
+        );
 
         [[nodiscard]]
-        virtual UniqueMouseCommandHandle
-        add_command(std::unique_ptr<MouseMoveCommand> command) = 0;
+        UniqueMouseCommandHandle
+        add_command(std::unique_ptr<MouseMoveCommand> command);
 
-        virtual void remove_command(InputKey key, KeyEventType event_type) = 0;
+        void remove_command(InputKey key, KeyEventType event_type);
 
-        virtual void remove_command(MouseCommandId id, MouseAction action) = 0;
+        void remove_command(MouseCommandId id, MouseAction action);
+
+        using IsKeyDown = bool;
 
         [[nodiscard]]
-        virtual bool get_key_state(InputKey key) const = 0;
+        IsKeyDown get_key_state(InputKey key) const;
     };
 }// namespace engine
 

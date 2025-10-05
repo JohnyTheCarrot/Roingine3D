@@ -3,7 +3,8 @@
 
 #include <bgfx/bgfx.h>
 
-namespace engine::constants {
+namespace engine::core::constants {
     constexpr bgfx::ViewId clear_view = 0;
 }
+
 #endif

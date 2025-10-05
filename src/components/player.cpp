@@ -2,6 +2,7 @@
 
 #include <bgfx/bgfx.h>
 
+#include "application.h"
 #include "commands/cam_adjust_command.h"
 #include "components/camera.h"
 #include "entity.h"
@@ -92,24 +93,29 @@ namespace engine {
                 get_gameobject().get_optional_component<Transform>();
         auto const pos = transform_ptr->get_position();
         bgfx::dbgTextPrintf(
-                0, 0, 0x0f, "{%f, %f, %f}", pos.get_x(), pos.get_y(),
-                pos.get_z()
+                0, 0, 0x0f, "Player pos: {%f, %f, %f}", pos.get_x(),
+                pos.get_y(), pos.get_z()
         );
         bgfx::dbgTextPrintf(
                 0, 1, 0x0f, "Cam pitch: %f, yaw: %f", cam_pitch_, cam_yaw_
         );
         bgfx::dbgTextPrintf(
-                0, 2, 0x0f, "rotQ: %f + %fi + %fj + %fk",
+                0, 2, 0x0f, "Player rotation quaternion: %f + %fi + %fj + %fk",
                 transform_ptr->get_rotation().x_,
                 transform_ptr->get_rotation().y_,
                 transform_ptr->get_rotation().z_,
                 transform_ptr->get_rotation().w_
         );
         bgfx::dbgTextPrintf(
-                0, 3, 0x0f, "fwd: {%f, %f, %f}",
+                0, 3, 0x0f, "Player vector: {%f, %f, %f}",
                 transform_ptr->get_forward().get_x(),
                 transform_ptr->get_forward().get_y(),
                 transform_ptr->get_forward().get_z()
+        );
+        auto &app = Application::get_instance();
+        bgfx::dbgTextPrintf(
+                0, 4, 0x0f, "Render surface dimensions: {%i, %i}",
+                app.get_width(), app.get_height()
         );
     }
 

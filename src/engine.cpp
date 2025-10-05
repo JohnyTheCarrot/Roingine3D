@@ -57,7 +57,8 @@ namespace engine {
                     0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, clear_color, 1.0f, 0
             );
             bgfx::setViewRect(
-                    constants::clear_view, 0, 0, bgfx::BackbufferRatio::Equal
+                    core::constants::clear_view, 0, 0,
+                    bgfx::BackbufferRatio::Equal
             );
             Vertex::setup_layout();
             game_ptr_->setup();
@@ -74,7 +75,7 @@ namespace engine {
 
             // This dummy draw call is here to make sure that view 0 is cleared if no
             // other draw calls are submitted to view 0.
-            bgfx::touch(constants::clear_view);
+            bgfx::touch(core::constants::clear_view);
             bgfx::dbgTextClear();
 
             bgfx::setDebug(BGFX_DEBUG_TEXT);

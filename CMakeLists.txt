@@ -3,6 +3,7 @@ project(CPP_Engine)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(BGFX_CMAKE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/bgfx.cmake")
 set(BGFX_DIR "${BGFX_CMAKE_DIR}/bgfx")
@@ -110,6 +111,7 @@ add_library(host_glfw STATIC
 
 add_library(host_emscripten STATIC
         src/platform_specific/host/emscripten/emscripten_host.cpp
+        src/platform_specific/host/emscripten/emscripten_input.cpp
         src/platform_specific/host/emscripten/shell.html
 )
 
@@ -126,9 +128,13 @@ if (EMSCRIPTEN)
   if (NOT DEFINED ENV{EMSDK})
     message(fatal_error "EMSDK is not in environment")
   endif()
+
+  set(CXX_AND_LINKER_FLAGS "-fwasm-exceptions")
+  target_compile_options(${PROJECT_NAME} PRIVATE ${CXX_AND_LINKER_FLAGS})
+  target_link_options(${PROJECT_NAME} PRIVATE ${CXX_AND_LINKER_FLAGS} -sEXIT_RUNTIME=1)
   if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fwasm-exceptions -fsanitize=undefined")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s SAFE_HEAP=1 -s ASSERTIONS=2 --profiling-funcs -fwasm-exceptions -gsource-map -s EXCEPTION_STACK_TRACES=1 -fsanitize=undefined -sEXIT_RUNTIME=1")
+    target_link_options(${PROJECT_NAME} PRIVATE "SHELL:-s SAFE_HEAP=1 -s ASSERTIONS=2 --profiling-funcs -gsource-map -s EXCEPTION_STACK_TRACES=1 -fsanitize=undefined")
+    target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=undefined)
   endif()
   target_link_options(${PROJECT_NAME} PRIVATE -sALLOW_MEMORY_GROWTH=1 --shell-file ${CMAKE_SOURCE_DIR}/src/platform_specific/host/emscripten/shell.html "SHELL:--embed-file \"${CMAKE_BINARY_DIR}/assets/crytech_sponza/@assets/crytech_sponza\" --embed-file \"${CMAKE_BINARY_DIR}/shaders@shaders\"")
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
