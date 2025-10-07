@@ -102,28 +102,13 @@ add_executable(CPP_Engine
         src/misc/observer.h
 )
 
-add_library(host_glfw STATIC
-        src/platform_specific/host/glfw/glfw_window.cpp
-        src/platform_specific/host/glfw/glfw_host.cpp
-        src/platform_specific/host/glfw/glfw_input.h
-        src/platform_specific/host/glfw/glfw_input.cpp
-)
-
-add_library(host_emscripten STATIC
-        src/platform_specific/host/emscripten/emscripten_host.cpp
-        src/platform_specific/host/emscripten/emscripten_input.cpp
-        src/platform_specific/host/emscripten/shell.html
-)
-
-set(ENGINE_LIBS bgfx bx EnTT::EnTT fastgltf::fastgltf)
-
-if (USES_GLFW AND NOT EMSCRIPTEN)
-    set(ENGINE_HOST host_glfw)
-    target_compile_definitions(${PROJECT_NAME} PRIVATE USES_GLFW)
-    target_link_libraries(${PROJECT_NAME} PRIVATE glfw)
+if (USES_GLFW)
+    if (BUILD_FOR_X11)
+        target_compile_definitions(CPP_Engine PRIVATE BUILD_FOR_X11)
+    endif ()
 endif ()
 
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+
 if (EMSCRIPTEN)
   if (NOT DEFINED ENV{EMSDK})
     message(fatal_error "EMSDK is not in environment")
@@ -140,20 +125,17 @@ if (EMSCRIPTEN)
   set(CMAKE_EXECUTABLE_SUFFIX ".html")
   set(CMAKE_TOOLCHAIN_FILE "$ENV{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake" CACHE STRING "Emscripten toolchain file")
   target_include_directories(host_emscripten PUBLIC "$ENV{EMSDK}/upstream/emscripten/cache/sysroot/include")
-  set(ENGINE_HOST host_emscripten)
-endif()
-
-target_link_libraries(${ENGINE_HOST} PUBLIC ${ENGINE_LIBS})
-target_include_directories(${ENGINE_HOST} PRIVATE src src/include)
-target_link_libraries(${PROJECT_NAME} PRIVATE ${ENGINE_HOST})
-
-if (EMSCRIPTEN)
-    set(GLFW_BUILD_X11 0)
-    set(GLFW_BUILD_WAYLAND 0)
-else ()
-    if (BUILD_FOR_X11)
-        target_compile_definitions(CPP_Engine PRIVATE BUILD_FOR_X11)
-    endif ()
+elseif (USES_GLFW)
+    add_subdirectory(external/glfw)
+    target_sources(${PROJECT_NAME} PRIVATE
+            src/platform_specific/host/glfw/glfw_window.cpp
+            src/platform_specific/host/glfw/glfw_host.cpp
+            src/platform_specific/host/glfw/glfw_input.h
+            src/platform_specific/host/glfw/glfw_input.cpp
+    )
+    target_compile_definitions(${PROJECT_NAME} PRIVATE USES_GLFW)
+    target_include_directories(${PROJECT_NAME} PRIVATE external/glfw/include)
+    target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
 endif ()
 
 include(FetchContent)
@@ -172,14 +154,7 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(Catch2)
-
-FetchContent_Declare(
-        glfw
-        GIT_REPOSITORY https://github.com/glfw/glfw
-        GIT_TAG 3.4
-)
-
-FetchContent_MakeAvailable(glfw)
+target_link_libraries(${PROJECT_NAME} PRIVATE bx EnTT::EnTT bgfx fastgltf::fastgltf)
 
 add_executable(tests
         src/tests/spaced_span.test.cpp
