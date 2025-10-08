@@ -13,6 +13,7 @@ on:
       - '**.sc'
       - 'CMakeLists.txt'
       - '.gitmodules'
+      - '.github/workflows/cmake-multi-platform.yml'
   pull_request:
     branches: [ "main", "development" ]
     paths:
@@ -23,6 +24,7 @@ on:
       - '**.sc'
       - 'CMakeLists.txt'
       - '.gitmodules'
+      - '.github/workflows/cmake-multi-platform.yml'
 
 jobs:
   build:
