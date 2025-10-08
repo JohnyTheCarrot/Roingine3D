@@ -206,3 +206,4 @@ add_dependencies(${PROJECT_NAME} assets)
 
 install(TARGETS ${PROJECT_NAME} DESTINATION package)
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders DESTINATION package)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/assets DESTINATION package)

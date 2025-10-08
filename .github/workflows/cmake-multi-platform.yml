@@ -118,9 +118,13 @@ jobs:
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target CPP_Engine
 
+      - name: Install
+        if: github.ref == 'refs/heads/main'
+        run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --component CPP_Engine
+
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v4
         with:
           name: build-artifact-${{ matrix.os }}-${{ matrix.c_compiler }}
-          path: ${{ steps.strings.outputs.build-output-dir }}
+          path: ${{ steps.strings.outputs.build-output-dir }}/package
