@@ -77,7 +77,7 @@ namespace engine::core {
             auto &platform_data = init.platformData;
             platform_data.ndt   = window_ptr_->get_native_display_type();
             platform_data.nwh   = window_ptr_->get_native_handle();
-#ifdef BX_PLATFORM_LINUX
+#if BX_PLATFORM_LINUX
 #    ifndef BUILD_FOR_X11
             platform_data.type = bgfx::NativeWindowHandleType::Wayland;
             std::cout << "Using Wayland display\n";

@@ -47,29 +47,29 @@ namespace engine::core {
     }
 
     Window::NativeWindowHandle Window::Impl::get_native_handle() const {
-#ifdef BX_PLATFORM_LINUX
+#if BX_PLATFORM_LINUX
 #    ifdef BUILD_FOR_X11
         return reinterpret_cast<void *>(glfwGetX11Window(window_ptr));
 #    else
         return glfwGetWaylandWindow(window_ptr_.get());
 #    endif
-#elifdef BX_PLATFORM_OSX
+#elif BX_PLATFORM_OSX
         return glfwGetCocoaWindow(window_ptr);
-#elifdef BX_PLATFORM_WINDOWS
+#elif BX_PLATFORM_WINDOWS
         return glfwGetWin32Window(window_ptr);
 #endif
     }
 
     Window::NativeDisplayType Window::Impl::get_native_display_type() const {
-#ifdef BX_PLATFORM_LINUX
+#if BX_PLATFORM_LINUX
 #    ifndef BUILD_FOR_X11
         return glfwGetWaylandDisplay();
 #    else
         return glfwGetX11Display();
 #    endif
-#elifdef BX_PLATFORM_OSX
+#elif BX_PLATFORM_OSX
         return glfwGetCocoaWindow(window_ptr);
-#elifdef BX_PLATFORM_WINDOWS
+#elif BX_PLATFORM_WINDOWS
         return glfwGetWin32Window(window_ptr);
 #endif
     }
