@@ -123,7 +123,7 @@ jobs:
 
       - name: Install
         if: github.ref == 'refs/heads/main'
-        run: cmake --install ${{ steps.strings.outputs.build-output-dir }} --component CPP_Engine
+        run: cmake --install ${{ steps.strings.outputs.build-output-dir }}
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/main'
