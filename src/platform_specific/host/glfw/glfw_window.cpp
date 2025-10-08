@@ -54,9 +54,9 @@ namespace engine::core {
         return glfwGetWaylandWindow(window_ptr_.get());
 #    endif
 #elif BX_PLATFORM_OSX
-        return glfwGetCocoaWindow(window_ptr);
+        return glfwGetCocoaWindow(window_ptr_.get());
 #elif BX_PLATFORM_WINDOWS
-        return glfwGetWin32Window(window_ptr);
+        return glfwGetWin32Window(window_ptr_.get());
 #endif
     }
 
@@ -67,10 +67,9 @@ namespace engine::core {
 #    else
         return glfwGetX11Display();
 #    endif
-#elif BX_PLATFORM_OSX
-        return glfwGetCocoaWindow(window_ptr);
-#elif BX_PLATFORM_WINDOWS
-        return glfwGetWin32Window(window_ptr);
+#else
+        // Specific to linux, so return nullptr
+        return nullptr;
 #endif
     }
 
