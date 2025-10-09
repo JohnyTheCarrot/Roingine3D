@@ -87,7 +87,7 @@ add_executable(CPP_Engine
         src/game/audio_rt_game.cpp
         src/graphics/texture.h
         src/graphics/texture.cpp
-        external/stb_image/std_image.cpp
+        external/stb_image/stb_image.cpp
         src/graphics/mesh.h
         src/graphics/mesh.cpp
         src/scene_loaders/gltf_loader.h
@@ -204,6 +204,8 @@ add_custom_target(assets ALL DEPENDS "${HASH_FILE}")
 
 add_dependencies(${PROJECT_NAME} assets)
 
-install(TARGETS ${PROJECT_NAME} DESTINATION ${CMAKE_BINARY_DIR}/package)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders DESTINATION ${CMAKE_BINARY_DIR}/package)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR}/package)
+set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
+install(TARGETS ${PROJECT_NAME} RUNTIME COMPONENT Runtime DESTINATION package)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/shaders COMPONENT Runtime DESTINATION package)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/assets COMPONENT Runtime DESTINATION package)
